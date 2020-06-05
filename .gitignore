@@ -1,0 +1,6 @@
+data/
+.snakemake/
+test.vcf.gz
+test.vcf.gz.tbi
+test.vcf.stats
+test_plot/
