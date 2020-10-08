@@ -5,3 +5,8 @@ test.vcf.gz.tbi
 test.vcf.stats
 test_plot/
 .ipynb_checkpoints/
+src/ngsRelate
+src/htslib
+src/hal
+src/sonLib
+
