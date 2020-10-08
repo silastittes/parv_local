@@ -1,0 +1,20 @@
+	-> Command: 
+angsd printsaf v5--LR--Los_Guajes--fold0_AA,AT,TA,TT,GG,GC,CG,CC.saf.gz 
+	-> angsd version: 0.931-2-gfd2a527-dirty (htslib: 1.9-353-gefa7aa6-dirty) build(Sep 16 2019 10:43:56)
+	-> Wed Oct  7 16:10:53 2020
+----------------
+multiReader.cpp:
+	-nLines	50	(Number of lines to read)
+	-beagle	(null)	(Beagle Filename (can be .gz))
+	-vcf-GL	(null)	(vcf Filename (can be .gz))
+	-vcf-GP	(null)	(vcf Filename (can be .gz))
+	-glf	(null)	(glf Filename (can be .gz))
+	-pileup	(null)	(pileup Filename (can be .gz))
+	-intName 1	(Assume First column is chr_position)
+	-isSim	1	(Simulated data assumes ancestral is A)
+	-nInd	0		(Number of individuals)
+	-minQ	13	(minimum base quality; only used in pileupreader)
+	-fai	(null)	(fai file)
+	-minQ	13	(minimum base quality; only used in pileupreader)
+----------------
+multiReader.cpp:

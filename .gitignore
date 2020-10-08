@@ -1,4 +1,5 @@
 data/
+src/cds_fold/
 .snakemake/
 test.vcf.gz
 test.vcf.gz.tbi
@@ -9,4 +10,4 @@ src/ngsRelate
 src/htslib
 src/hal
 src/sonLib
-
+slurm_log/
