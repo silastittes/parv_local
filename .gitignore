@@ -1,6 +1,7 @@
 data/
 src/cds_fold/
 .snakemake/
+src/raisd-master/
 test.vcf.gz
 test.vcf.gz.tbi
 test.vcf.stats

@@ -1,4 +1,3 @@
-
 rule full_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
@@ -10,11 +9,36 @@ rule full_beagle:
         prefix = "data/beagle/{ref}--{ssp}"
     shell:
         """
-        module load angsd
-        angsd -GL 1 -P 10 \
-        -ref {input.ref}  -anc {input.trip} \
-        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0  -C 50  -minMapQ 30 -minQ 30 \
+        module load angsd \ 
+        -ref {input.ref} \
+        angsd -GL 1 -P 30 \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -minMapQ 30 -minQ 30 \
         -doGlf 2 -doMajorMinor 1 -SNP_pval 1e-6 -doMaf 1 -bam {input.bams} -out {params.prefix}
+        """
+
+rule sample_gl:
+    input:
+        "data/beagle/{ref}--{ssp}.beagle.gz"
+    output:
+        "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
+    shell:
+        """
+        cat <(zcat {input} | head -n1) <(zcat {input} | tail -n+2 | sed -n '0~100p') | gzip > {output}
+        """
+
+
+rule admix:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
+    output:
+        "data/ngsAdmix/{ref}--{ssp}_K{K}.qopt"
+    params:
+        prefix = "data/ngsAdmix/{ref}--{ssp}_K{K}",
+        K = "{K}"
+    shell:
+        """
+        module load angsd
+        NGSadmix -likes {input} -K {params.K} -P 10 -o {params.prefix} -minMaf 0.05
         """
 
 rule pop_beagle:
