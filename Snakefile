@@ -1,5 +1,8 @@
 import re
 
+
+my_scratch = "/scratch/stittes/"
+
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
@@ -22,14 +25,18 @@ REF, SSP, POP = glob_wildcards("data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt")
 mx_POP = [f"{i}--{j}" for i, j in  zip(SSP, POP)]
 print(mx_POP)
 mix_POP = list(set(list(filter(lambda a: a not in ['LR--random', 'Teo--random'], mx_POP))))
+#mix_POP.append("trip--trip")
 print('\n'.join(mix_POP))
 
-mREF, mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
 
-mop_files = expand("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, 
-                    ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+#SWITCH
+#mREF, mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
+#mop_files = expand("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 
-mop_final = expand("data/mop/{ref}--{ssp}--{pop}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP)
+mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
+mop_files = expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+
+#mop_final = expand("data/mop/{ref}--{ssp}--{pop}_all.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP)
 
 
 ##########
@@ -82,8 +89,7 @@ mk_files = [m.replace("FOLD", f).replace("NUCS", n) for m in mk_sites for f in f
 
 #print('\n'.join(mk_files))
 
-K_dict = {"Teo_k": 6, "LR_k": 5}
-
+K_dict = {"Teo_k": [6], "LR_k": [5]}
 
 ###########
 ## RAiSD ##
@@ -92,8 +98,35 @@ K_dict = {"Teo_k": 6, "LR_k": 5}
 #data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{region}.corrected
 #SWITCH
 #raisd_files = expand("data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-raisd_files = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-print('\n'.join(raisd_files))
+
+#raisd_files = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+raisd_corrected = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}.corrected", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+raisd_outliers = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}.corrected_block_outliers", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+raisd_merged = expand("data/raisd/v5--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp = SSP, pop = POP)
+print('\n'.join(raisd_outliers))
+
+
+##########
+## DADI ##
+##########
+
+#SWTICH
+#dadi_out = expand("data/dadi/RAiSD_Report.{ref}--{ssp}--{pop}_NUCS_msprime", zip, ref = REF, ssp = SSP, pop = POP)
+dadi_out = expand("data/dadi/RAiSD_Report.v5--{ssp}--{pop}_NUCS_msprime", zip, ssp = SSP, pop = POP)
+dadi_files = [m.replace("NUCS", n) for m in dadi_out for n in nucs]
+
+
+############
+## IBDseq ##
+############
+
+#data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2max{r2max}.hbd
+
+#SWITCH
+#ibd_files = expand("data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2maxR2.hbd", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+ibd_files = expand("data/ibdseq/v5--{ssp}--{pop}--{chrom}--{start}--{end}_r2maxR2.hbd", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+ibd_files = [f.replace("R2", r) for f in ibd_files for r in ["0.7", "0.4"]]
+
 
 #################
 ## OTHER FILES ##
@@ -115,11 +148,17 @@ for ref in ["v5"]:
 
         #!!!
         all_files.append(f"data/beagle/{ref}--{ssp}.beagle.gz")
-        all_files.append(f"data/ngsAdmix/{ref}--{ssp}_K{ref_dict}.qopt") #working, but need to wait
-    all_files.append(f"data/refs/{ref}/{ref}_FOLD")
-    all_files.append(f"data/trip/trip_{ref}_FOLD")
+        for k in ref_dict:
+            all_files.append(f"data/ngsAdmix/{ref}--{ssp}_K{k}.qopt")
+            all_files.append(f"data/ngsAdmix/v5_{ssp}_{k}_thin1M_random10_PalmarChico.qopt")
+        all_files.append(f"data/refs/{ref}/{ref}_FOLD")
+        all_files.append(f"data/trip/trip_{ref}_FOLD")
+        all_files.append(f"data/beagle/v5--{ssp}_100thin_random10_PalmarChico.beagle.gz")
+        all_files.append(f"data/beagle/v5--{ssp}_100thin_PalmarChicoONLY.beagle.gz")
+        for i in range(2,6,1):
+            all_files.append(f"data/ngsAdmix/v5_{ssp}_{i}_thin1M_PalmarChicoONLY.qopt")    
 
-
+#all_files.append("data/angsd_treemix/v5--trip--trip.mafscount.bed")
 #print('\n'.join(pi_files))
 #print(all_files)
 
@@ -133,11 +172,15 @@ rule all:
         mk_files,
         relate_files,
         "data/angsd_treemix/v5_treemix.treeout.gz",
+        #"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
+        raisd_corrected,
+        raisd_outliers,
+        raisd_merged,
+        ibd_files,
+        dadi_files,
+        all_files, 
+        mop_files
         #vcf_files,
-        raisd_files,
-        all_files
-        
-        #mop_files
         #mop_final,
 
 
@@ -149,4 +192,5 @@ include: "rules/angsd.smk"
 include: "rules/mk.smk"
 include: "rules/ngsRelate.smk"
 include: "rules/treemix.smk"
-include: "rules/raisd.smk"
+include: "rules/angsd_vcf.smk"
+include: "rules/raisd_dadi.smk"

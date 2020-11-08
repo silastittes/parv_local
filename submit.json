@@ -1,5 +1,4 @@
-{
-    "__default__" :
+{ "__default__" :
     {
         "p" : "med2",
         "mem" : "5G",
@@ -48,7 +47,7 @@
     "full_beagle":
     {
         "cpus-per-task" : 30,
-        "mem" : "64G",
+        "mem" : "120G",
         "time" : "100:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
@@ -63,11 +62,38 @@
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },
+    "chico10_admix":
+    {
+        "cpus-per-task" : 10,
+        "mem" : "64G",
+        "time" : "100:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "chico_only_admix":
+    {
+        "cpus-per-task" : 10,
+        "mem" : "64G",
+        "time" : "100:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
     "pop_beagle":
     {
         "cpus-per-task" : 5,
         "mem" : "64G",
         "time" : "100:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "trip_beagle":
+    {
+        "cpus-per-task" : 5,
+        "mem" : "24G",
+        "time" : "20:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
@@ -111,8 +137,8 @@
     "ngsRelate":
     {
         "cpus-per-task" : 5,
-        "mem" : "32G",
-        "time" : "5:00:00",
+        "mem" : "120G",
+        "time" : "24:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
@@ -144,7 +170,16 @@
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },
-    "raisd_beagle":
+     "fourpop":
+        {   
+        "cpus-per-task" : 1,
+        "mem" : "48G",
+        "time" : "20-00:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+   "raisd_beagle":
     {   
         "cpus-per-task" : 5,
         "mem" : "24G",
@@ -167,6 +202,24 @@
         "cpus-per-task" : 1,
         "mem" : "2G",
         "time" : "2:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "IBDseq":
+    {   
+        "cpus-per-task" : 12,
+        "mem" : "24G",
+        "time" : "3:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "dadi":
+    {
+        "cpus-per-task" : 1,
+        "mem" : "4G",
+        "time" : "4:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"

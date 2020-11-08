@@ -6,14 +6,24 @@ rule full_beagle:
     output:
         "data/beagle/{ref}--{ssp}.beagle.gz"
     params:
-        prefix = "data/beagle/{ref}--{ssp}"
+        #prefix = "data/beagle/{ref}--{ssp}",
+        scratch = my_scratch,
+        prefix = my_scratch + "{ref}--{ssp}",
+        final = "data/beagle/"
     shell:
         """
-        module load angsd \ 
-        -ref {input.ref} \
+        mkdir -p {params.scratch}
+    
+        module load angsd 
+
         angsd -GL 1 -P 30 \
+        -ref {input.ref} \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0 -C 50 -minMapQ 30 -minQ 30 \
         -doGlf 2 -doMajorMinor 1 -SNP_pval 1e-6 -doMaf 1 -bam {input.bams} -out {params.prefix}
+
+        mv {params.prefix}.beagle.gz {params.final}
+        mv {params.prefix}.mafs.gz {params.final}
+        mv {params.prefix}.arg {params.final}
         """
 
 rule sample_gl:
@@ -41,6 +51,53 @@ rule admix:
         NGSadmix -likes {input} -K {params.K} -P 10 -o {params.prefix} -minMaf 0.05
         """
 
+
+#caution, this might fail because awk and snakemake are the pits
+rule chico10_beagle:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
+    output:
+        "data/beagle/{ref}--{ssp}_100thin_random10_PalmarChico.beagle.gz"
+    params:
+        ssp = "{ssp}"
+    shell:
+        """
+        zcat {input} | cut -f 1-3,`grep -Ff <(cat <(grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep -v Palmar) <(grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep Palmar | shuf -n 10 | sort -V) | awk '{{print $1"t"}}') <(zcat {input} | head -n1 | tr "\\t" "\\n" | cat -n | tail -n+4 | awk '{{print $1 "\\t" $2 "t"}}') | cut -f1 | tr "\\n" "," | sed 's/,$/\\n/g'` | gzip > {output}
+        """
+
+rule chico10_admix:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin_random10_PalmarChico.beagle.gz"
+    output:
+        "data/ngsAdmix/{ref}_{ssp}_{k}_thin1M_random10_PalmarChico.qopt"
+    params:
+        prefix = "data/ngsAdmix/{ref}_{ssp}_{k}_thin1M_random10_PalmarChico",
+        k = "{k}"
+    shell:
+        "NGSadmix -likes {input} -K {params.k} -P 10 -o {params.prefix} -minMaf 0.05"
+
+
+rule chico_only_beagle:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
+    output:
+        "data/beagle/{ref}--{ssp}_100thin_PalmarChicoONLY.beagle.gz"
+    shell:
+        "zcat {input} | cut -f1-3,124- | gzip > {output}"
+
+
+rule chico_only_admix:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin_PalmarChicoONLY.beagle.gz"
+    output:
+        "data/ngsAdmix/{ref}_{ssp}_{i}_thin1M_PalmarChicoONLY.qopt"
+    params:
+        prefix = "data/ngsAdmix/{ref}_{ssp}_{i}_thin1M_PalmarChicoONLY",
+        k = "{i}"
+    shell:
+        "NGSadmix -likes {input} -K {params.k} -P 10 -o {params.prefix} -minMaf 0.05"
+
+
 rule pop_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
@@ -59,6 +116,7 @@ rule pop_beagle:
         -doMaf 2 -doMajorMinor 4 -doSaf 1 \
         -bam {input.bams} -out {params.prefix}
         """
+
 rule pop_sfs:
     input:
         ref = "data/refs/{ref}/{ref}.fa",

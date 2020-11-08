@@ -11,4 +11,7 @@ src/ngsRelate
 src/htslib
 src/hal
 src/sonLib
+src/msdir/
 slurm_log/
+figures/
+src/ibdseq.r1206.jar

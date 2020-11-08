@@ -32,3 +32,23 @@ rule trip_fasta:
         module load angsd
         angsd -i {input} -doFasta 2 -doCounts 1 -out {params.prefix}
         """
+
+rule trip_beagle:
+    input:
+        ref = "data/refs/{ref}/{ref}.fa",
+        trip = "data/trip/trip_{ref}.fa.gz",
+        bams = "data/trip/{ref}--{ssp}--{pop}__bamlist.txt"
+    output:
+        mafs = "data/angsd_pi/{ref}--{ssp}--{pop}.mafs.gz"
+    params:
+        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}"
+    shell:
+        """
+        module load angsd
+        angsd -GL 1 -P 5 \
+        -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0  -C 50  -minMapQ 30 -minQ 30 \
+        -ref {input.ref}  -anc {input.trip} \
+        -doMaf 2 -doMajorMinor 4 \
+        -bam {input.bams} -out {params.prefix}
+        """
+

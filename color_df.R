@@ -3,13 +3,19 @@ pop = c("Los_Guajes",
         "El_Rodeo",
         "Amatlan_de_Canas", 
         "San_Lorenzo",
-        "Palmar_Chico")
+        "Palmar_Chico",
+        "random1_Palmar_Chico",
+        "random2_Palmar_Chico",    
+        "random")
 color = c("mediumaquamarine", 
           "gold",
           "darkorange", 
           "cornflowerblue",
           "purple",
-          "violetred")
+          "violetred",
+          "violetred",
+          "violetred",
+          "grey")
 
 color_df <- 
   tibble(

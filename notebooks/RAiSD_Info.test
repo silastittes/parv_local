@@ -1,0 +1,104 @@
+
+ ooooooooo.         .o.        o8o   .oooooo..o oooooooooo.
+ `888   `Y88.      .888.       `"'  d8P'    `Y8 `888'   `Y8b
+  888   .d88'     .8"888.     oooo  Y88bo.       888      888
+  888ooo88P'     .8' `888.    `888   `"Y8888o.   888      888
+  888`88b.      .88ooo8888.    888       `"Y88b  888      888
+  888  `88b.   .8'     `888.   888  oo     .d8P  888     d88'
+ o888o  o888o o88o     o8888o o888o 8""88888P'  o888bood8P'
+
+ RAiSD, Raised Accuracy in Sweep Detection
+ This is version 2.9 (released in August 2020)
+ Copyright (C) 2017, and GNU GPL'd, by Nikolaos Alachiotis and Pavlos Pavlidis
+ Contact n.alachiotis/pavlidisp at gmail.com
+
+ Command: ../src/raisd-master/RAiSD -I ../ms_test -n test -L 10000 -f 
+ Samples: 20
+ Region:  10000 bp
+ Format:  ms
+
+ A pattern structure of 65536 patterns (max. capacity) and approx. 2 MB memory footprint has been created.
+
+
+ 0: Set 0 | sites 708 | snps 708 | region 10000 - Var 3775 1.345e+00 | SFS 2640 1.632e+00 | LD 5750 3.785e+00 | MuStat 5425 4.384e+00
+ 1: Set 1 | sites 625 | snps 625 | region 10000 - Var 7185 1.513e+00 | SFS 3575 1.987e+00 | LD 3390 5.127e+00 | MuStat 8405 5.065e+00
+ 2: Set 2 | sites 891 | snps 891 | region 10000 - Var 8135 1.800e+00 | SFS 5765 1.774e+00 | LD 5835 4.283e+00 | MuStat 5835 6.601e+00
+ 3: Set 3 | sites 652 | snps 652 | region 10000 - Var 3825 1.395e+00 | SFS 3840 1.987e+00 | LD 1580 4.333e+00 | MuStat 4320 5.601e+00
+ 4: Set 4 | sites 678 | snps 678 | region 10000 - Var 1675 1.722e+00 | SFS 7940 1.419e+00 | LD 8750 4.444e+00 | MuStat 4430 5.591e+00
+ 5: Set 5 | sites 763 | snps 763 | region 10000 - Var 1240 1.557e+00 | SFS 1250 2.554e+00 | LD 4060 7.778e+00 | MuStat 1405 7.418e+00
+ 6: Set 6 | sites 807 | snps 807 | region 10000 - Var 7980 1.453e+00 | SFS 2810 2.129e+00 | LD 6080 1.019e+01 | MuStat 2935 4.633e+00
+ 7: Set 7 | sites 737 | snps 737 | region 10000 - Var 3350 1.592e+00 | SFS 5525 2.909e+00 | LD 8720 4.286e+00 | MuStat 6045 6.034e+00
+ 8: Set 8 | sites 711 | snps 711 | region 10000 - Var 5300 1.820e+00 | SFS 6815 1.561e+00 | LD 8550 6.250e+00 | MuStat 4970 9.803e+00
+ 9: Set 9 | sites 791 | snps 791 | region 10000 - Var 2100 1.487e+00 | SFS 9640 2.200e+00 | LD 6585 5.379e+00 | MuStat 3595 5.320e+00
+ 10: Set 10 | sites 792 | snps 792 | region 10000 - Var 2380 2.408e+00 | SFS 6805 2.200e+00 | LD 5495 5.655e+00 | MuStat 2380 1.496e+01
+ 11: Set 11 | sites 713 | snps 713 | region 10000 - Var 8375 2.125e+00 | SFS 4155 1.987e+00 | LD 6495 5.844e+00 | MuStat 6495 9.112e+00
+ 12: Set 12 | sites 561 | snps 561 | region 10000 - Var 7480 1.391e+00 | SFS 1530 1.703e+00 | LD 3900 7.778e+00 | MuStat 1395 5.705e+00
+ 13: Set 13 | sites 743 | snps 743 | region 10000 - Var 5585 1.441e+00 | SFS 7075 2.271e+00 | LD 2935 7.778e+00 | MuStat 6515 5.745e+00
+ 14: Set 14 | sites 898 | snps 898 | region 10000 - Var 5780 1.401e+00 | SFS 2025 2.412e+00 | LD 2915 4.857e+00 | MuStat 2090 5.907e+00
+ 15: Set 15 | sites 843 | snps 843 | region 10000 - Var 4890 1.753e+00 | SFS 7355 1.916e+00 | LD 5970 4.256e+00 | MuStat 5060 6.264e+00
+ 16: Set 16 | sites 811 | snps 811 | region 10000 - Var 7190 1.525e+00 | SFS 2825 2.271e+00 | LD 8825 4.909e+00 | MuStat 3155 7.281e+00
+ 17: Set 17 | sites 698 | snps 698 | region 10000 - Var 3285 1.577e+00 | SFS 8710 1.703e+00 | LD 4635 3.614e+00 | MuStat 6450 3.193e+00
+ 18: Set 18 | sites 721 | snps 721 | region 10000 - Var 6960 1.644e+00 | SFS 6250 2.767e+00 | LD 3385 4.006e+00 | MuStat 6560 8.427e+00
+ 19: Set 19 | sites 722 | snps 722 | region 10000 - Var 900 1.646e+00 | SFS 465 2.696e+00 | LD 2625 1.042e+01 | MuStat 2625 7.364e+00
+ 20: Set 20 | sites 683 | snps 683 | region 10000 - Var 1390 1.475e+00 | SFS 8870 1.135e+00 | LD 7380 5.025e+00 | MuStat 8670 3.664e+00
+ 21: Set 21 | sites 834 | snps 834 | region 10000 - Var 4165 1.818e+00 | SFS 3280 2.058e+00 | LD 310 4.922e+00 | MuStat 3950 5.238e+00
+ 22: Set 22 | sites 647 | snps 647 | region 10000 - Var 5845 1.540e+00 | SFS 4825 2.271e+00 | LD 6415 5.493e+00 | MuStat 4745 5.108e+00
+ 23: Set 23 | sites 775 | snps 775 | region 10000 - Var 5540 1.829e+00 | SFS 5120 1.987e+00 | LD 670 5.571e+00 | MuStat 5230 6.251e+00
+ 24: Set 24 | sites 808 | snps 808 | region 10000 - Var 7140 1.875e+00 | SFS 4240 1.916e+00 | LD 2560 5.075e+00 | MuStat 4420 5.768e+00
+ 25: Set 25 | sites 724 | snps 724 | region 10000 - Var 3830 1.332e+00 | SFS 3005 1.845e+00 | LD 8760 4.741e+00 | MuStat 3510 7.192e+00
+ 26: Set 26 | sites 711 | snps 711 | region 10000 - Var 3695 1.607e+00 | SFS 2505 1.419e+00 | LD 1490 4.422e+00 | MuStat 2355 3.187e+00
+ 27: Set 27 | sites 787 | snps 787 | region 10000 - Var 8825 1.621e+00 | SFS 395 1.632e+00 | LD 6035 4.286e+00 | MuStat 360 4.428e+00
+ 28: Set 28 | sites 685 | snps 685 | region 10000 - Var 3315 1.411e+00 | SFS 8850 2.058e+00 | LD 8235 4.671e+00 | MuStat 8605 6.255e+00
+ 29: Set 29 | sites 771 | snps 771 | region 10000 - Var 7095 1.958e+00 | SFS 6770 1.845e+00 | LD 2900 5.398e+00 | MuStat 7010 6.368e+00
+ 30: Set 30 | sites 756 | snps 756 | region 10000 - Var 860 2.208e+00 | SFS 8085 2.980e+00 | LD 8930 6.071e+00 | MuStat 1170 5.848e+00
+ 31: Set 31 | sites 712 | snps 712 | region 10000 - Var 3995 1.752e+00 | SFS 2495 1.916e+00 | LD 9730 5.625e+00 | MuStat 8595 5.192e+00
+ 32: Set 32 | sites 728 | snps 728 | region 10000 - Var 7760 2.126e+00 | SFS 2595 1.774e+00 | LD 3280 4.533e+00 | MuStat 8020 6.942e+00
+ 33: Set 33 | sites 641 | snps 641 | region 10000 - Var 4365 1.679e+00 | SFS 9515 2.200e+00 | LD 7670 3.988e+00 | MuStat 9490 3.501e+00
+ 34: Set 34 | sites 763 | snps 763 | region 10000 - Var 1130 1.648e+00 | SFS 2750 1.987e+00 | LD 1910 5.844e+00 | MuStat 2515 6.153e+00
+ 35: Set 35 | sites 805 | snps 805 | region 10000 - Var 1475 1.819e+00 | SFS 2485 1.064e+00 | LD 7760 4.667e+00 | MuStat 1535 4.748e+00
+ 36: Set 36 | sites 985 | snps 985 | region 10000 - Var 2860 1.852e+00 | SFS 2035 3.051e+00 | LD 2275 5.417e+00 | MuStat 2275 1.246e+01
+ 37: Set 37 | sites 717 | snps 717 | region 10000 - Var 9100 1.348e+00 | SFS 2195 2.271e+00 | LD 765 6.109e+00 | MuStat 7390 4.440e+00
+ 38: Set 38 | sites 603 | snps 603 | region 10000 - Var 1855 1.966e+00 | SFS 195 2.483e+00 | LD 3470 9.333e+00 | MuStat 1060 6.235e+00
+ 39: Set 39 | sites 722 | snps 722 | region 10000 - Var 2315 1.747e+00 | SFS 1840 2.129e+00 | LD 8575 4.595e+00 | MuStat 2310 9.765e+00
+ 40: Set 40 | sites 701 | snps 701 | region 10000 - Var 7710 1.542e+00 | SFS 3095 2.200e+00 | LD 5470 5.143e+00 | MuStat 3250 3.751e+00
+ 41: Set 41 | sites 859 | snps 859 | region 10000 - Var 2285 1.770e+00 | SFS 4925 2.058e+00 | LD 5185 6.325e+00 | MuStat 4590 8.357e+00
+ 42: Set 42 | sites 949 | snps 949 | region 10000 - Var 5175 1.651e+00 | SFS 2545 1.987e+00 | LD 610 6.250e+00 | MuStat 2300 4.351e+00
+ 43: Set 43 | sites 924 | snps 924 | region 10000 - Var 8120 1.663e+00 | SFS 8365 2.271e+00 | LD 6300 5.050e+00 | MuStat 8275 5.999e+00
+ 44: Set 44 | sites 716 | snps 716 | region 10000 - Var 6300 1.690e+00 | SFS 9205 1.561e+00 | LD 3015 5.077e+00 | MuStat 6330 4.689e+00
+ 45: Set 45 | sites 804 | snps 804 | region 10000 - Var 5580 1.576e+00 | SFS 3230 2.129e+00 | LD 9725 3.592e+00 | MuStat 4600 4.356e+00
+ 46: Set 46 | sites 628 | snps 628 | region 10000 - Var 1130 1.658e+00 | SFS 7575 1.348e+00 | LD 2935 4.263e+00 | MuStat 7255 4.296e+00
+ 47: Set 47 | sites 756 | snps 756 | region 10000 - Var 710 1.996e+00 | SFS 710 1.703e+00 | LD 3505 5.143e+00 | MuStat 6765 6.391e+00
+ 48: Set 48 | sites 727 | snps 727 | region 10000 - Var 600 1.599e+00 | SFS 5100 2.696e+00 | LD 6860 4.222e+00 | MuStat 725 5.535e+00
+ 49: Set 49 | sites 845 | snps 845 | region 10000 - Var 7270 1.487e+00 | SFS 3045 1.348e+00 | LD 280 3.897e+00 | MuStat 935 3.554e+00
+ 50: Set 50 | sites 649 | snps 649 | region 10000 - Var 5860 1.584e+00 | SFS 6270 2.200e+00 | LD 3230 4.162e+00 | MuStat 6190 7.742e+00
+ 51: Set 51 | sites 623 | snps 623 | region 10000 - Var 6485 1.508e+00 | SFS 7935 2.767e+00 | LD 8245 3.542e+00 | MuStat 8245 9.610e+00
+ 52: Set 52 | sites 851 | snps 851 | region 10000 - Var 6065 1.685e+00 | SFS 8385 1.703e+00 | LD 2235 5.844e+00 | MuStat 2235 3.903e+00
+ 53: Set 53 | sites 600 | snps 600 | region 10000 - Var 2220 1.728e+00 | SFS 5865 2.058e+00 | LD 7335 3.726e+00 | MuStat 6375 4.692e+00
+ 54: Set 54 | sites 769 | snps 769 | region 10000 - Var 1450 1.661e+00 | SFS 8285 1.490e+00 | LD 6020 4.400e+00 | MuStat 8490 3.649e+00
+ 55: Set 55 | sites 730 | snps 730 | region 10000 - Var 1795 1.796e+00 | SFS 6265 2.200e+00 | LD 7460 5.031e+00 | MuStat 6700 7.232e+00
+ 56: Set 56 | sites 727 | snps 727 | region 10000 - Var 1040 1.483e+00 | SFS 7275 2.058e+00 | LD 5185 6.071e+00 | MuStat 7360 6.405e+00
+ 57: Set 57 | sites 658 | snps 658 | region 10000 - Var 2755 1.592e+00 | SFS 4625 1.703e+00 | LD 790 6.286e+00 | MuStat 2005 4.822e+00
+ 58: Set 58 | sites 791 | snps 791 | region 10000 - Var 1855 1.471e+00 | SFS 3100 1.845e+00 | LD 2115 5.067e+00 | MuStat 2115 5.693e+00
+ 59: Set 59 | sites 840 | snps 840 | region 10000 - Var 3315 1.495e+00 | SFS 7735 2.342e+00 | LD 2595 6.240e+00 | MuStat 3330 8.310e+00
+ 60: Set 60 | sites 677 | snps 677 | region 10000 - Var 8030 1.571e+00 | SFS 8345 1.703e+00 | LD 7045 5.655e+00 | MuStat 7995 5.544e+00
+ 61: Set 61 | sites 727 | snps 727 | region 10000 - Var 3100 1.832e+00 | SFS 3035 1.064e+00 | LD 9380 4.736e+00 | MuStat 3100 4.476e+00
+ 62: Set 62 | sites 731 | snps 731 | region 10000 - Var 1295 1.740e+00 | SFS 7915 1.703e+00 | LD 4560 5.181e+00 | MuStat 7925 5.972e+00
+ 63: Set 63 | sites 840 | snps 840 | region 10000 - Var 5850 1.613e+00 | SFS 5430 2.129e+00 | LD 1545 5.927e+00 | MuStat 4765 5.168e+00
+ 64: Set 64 | sites 863 | snps 863 | region 10000 - Var 7560 1.622e+00 | SFS 3050 2.625e+00 | LD 1030 5.333e+00 | MuStat 3180 5.514e+00
+ 65: Set 65 | sites 773 | snps 773 | region 10000 - Var 1435 1.716e+00 | SFS 4560 2.058e+00 | LD 5765 4.156e+00 | MuStat 8230 3.810e+00
+ 66: Set 66 | sites 681 | snps 681 | region 10000 - Var 1015 2.057e+00 | SFS 6215 2.696e+00 | LD 6460 7.778e+00 | MuStat 6460 5.878e+00
+ 67: Set 67 | sites 744 | snps 744 | region 10000 - Var 4215 1.771e+00 | SFS 7800 2.129e+00 | LD 8765 5.303e+00 | MuStat 7895 4.635e+00
+ 68: Set 68 | sites 753 | snps 753 | region 10000 - Var 5345 1.822e+00 | SFS 970 1.632e+00 | LD 3890 5.733e+00 | MuStat 1040 5.049e+00
+ 69: Set 69 | sites 806 | snps 806 | region 10000 - Var 2290 1.870e+00 | SFS 9230 1.845e+00 | LD 3495 4.821e+00 | MuStat 2225 5.059e+00
+ 70: Set 70 | sites 723 | snps 723 | region 10000 - Var 7820 1.533e+00 | SFS 1910 1.916e+00 | LD 2700 6.583e+00 | MuStat 2085 6.163e+00
+ 71: Set 71 | sites 880 | snps 880 | region 10000 - Var 2350 1.830e+00 | SFS 3100 2.200e+00 | LD 7520 5.250e+00 | MuStat 3000 7.739e+00
+ 72: Set 72 | sites 694 | snps 694 | region 10000 - Var 4850 1.777e+00 | SFS 5560 1.774e+00 | LD 2810 4.958e+00 | MuStat 4405 3.900e+00
+ 73: Set 73 | sites 739 | snps 739 | region 10000 - Var 950 1.596e+00 | SFS 355 1.632e+00 | LD 5535 5.314e+00 | MuStat 5535 5.779e+00
+ 74: Set 74 | sites 758 | snps 758 | region 10000 - Var 6505 1.440e+00 | SFS 6545 2.129e+00 | LD 3010 6.349e+00 | MuStat 3020 8.151e+00
+ 75: Set 75 | sites 747 | snps 747 | region 10000 - Var 2675 1.718e+00 | SFS 4705 1.845e+00 | LD 2220 5.481e+00 | MuStat 2955 5.176e+00
+ 76: Set 76 | sites 722 | snps 722 | region 10000 - Var 5215 1.892e+00 | SFS 1940 1.774e+00 | LD 9115 5.633e+00 | MuStat 4770 3.628e+00
+ 77: Set 77 | sites 608 | snps 608 | region 10000 - Var 6500 1.775e+00 | SFS 6105 1.348e+00 | LD 4595 4.800e+00 | MuStat 6250 5.604e+00
+ 78: Set 78 | sites 895 | snps 895 | region 10000 - Var 6490 1.468e+00 | SFS 5225 1.632e+00 | LD 4600 4.444e+00 | MuStat 5320 4.527e+00
+ 79: Set 79 | sites 659 | snps 659 | region 10000 - Var 1735 1.806e+00 | SFS 580 2.696e+00 | LD 6790 9.167e+00 | MuStat 975 5.160e+00
+ 80: Set 80 | sites 755 | snps 755 | region 10000 - Var 7860 1.752e+00 | SFS 995 1.419e+00 | LD 9085 4.741e+00 | MuStat 7780 4.519e+00ERROR: Unrecognized character ÿ
+

@@ -14,8 +14,9 @@ rule mop:
 
 rule mop_merge:
     input:
-        expand("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+        #expand("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+        expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
     output:
-        "data/mop/{ref}--{ssp}--{pop}.bed"
+        "data/mop/{ref}--{ssp}--{pop}_all.bed"
     run:
         shell("cat {input} > {output}")
