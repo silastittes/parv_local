@@ -37,6 +37,7 @@ rule sample_gl:
         """
 
 
+
 rule admix:
     input:
         "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
@@ -82,8 +83,14 @@ rule chico_only_beagle:
         "data/beagle/{ref}--{ssp}_100thin.beagle.gz"
     output:
         "data/beagle/{ref}--{ssp}_100thin_PalmarChicoONLY.beagle.gz"
+    params:
+        ssp = "{ssp}"
     shell:
-        "zcat {input} | cut -f1-3,124- | gzip > {output}"
+        """
+        grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | grep  Palmar | cut -f1 > {params.ssp}PC_beagleID
+        python src/subset_beagle.py -b {input} -i {params.ssp}PC_beagleID | gzip > {output}
+        """
+#"zcat {input} | cut -f1-3,124- | gzip > {output}"
 
 
 rule chico_only_admix:
@@ -95,9 +102,44 @@ rule chico_only_admix:
         prefix = "data/ngsAdmix/{ref}_{ssp}_{i}_thin1M_PalmarChicoONLY",
         k = "{i}"
     shell:
-        "NGSadmix -likes {input} -K {params.k} -P 10 -o {params.prefix} -minMaf 0.05"
+        """
+        module load angsd
+        NGSadmix -likes {input} -K {params.k} -P 10 -o {params.prefix} -minMaf 0.05
+        """
 
 
+rule split_beagle:
+    input:
+        "data/beagle/{ref}--{ssp}_100thin_PalmarChicoONLY.beagle.gz"
+    output:
+        "data/beagle/{ref}_{ssp}_{ch}_100thin_PalmarChicoONLY.beagle.gz"
+    params:
+        ref = "{ref}",
+        ssp = "{ssp}",
+        ch = "{ch}"
+    shell:
+        "cat <(zcat {input} | head -n1) <(zcat {input} | grep {params.ch}) | gzip > {output}"
+
+
+rule chico_chrom:
+    input:
+        "data/beagle/{ref}_{ssp}_{ch}_100thin_PalmarChicoONLY.beagle.gz"
+    output:
+        "data/ngsAdmix/{ref}_{ssp}_{k}_{ch}_thin1M_PalmarChicoONLY.qopt"    
+    params:
+        ref = "{ref}",
+        ssp = "{ssp}",
+        prefix = "data/ngsAdmix/{ref}_{ssp}_{k}_{ch}_thin1M_PalmarChicoONLY",
+        k = "{k}",
+        ch = "{ch}"
+    shell:
+        """
+        module load angsd
+        NGSadmix -likes data/beagle/{params.ref}_{params.ssp}_{params.ch}_100thin_PalmarChicoONLY.beagle.gz -K {params.k} -P 10 -o {params.prefix} -minMaf 0.05
+        """
+        
+        
+    
 rule pop_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",

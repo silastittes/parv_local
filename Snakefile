@@ -36,6 +36,8 @@ print('\n'.join(mix_POP))
 mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
 mop_files = expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 
+chroms = list(set(mCHROM))
+
 #mop_final = expand("data/mop/{ref}--{ssp}--{pop}_all.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP)
 
 
@@ -78,7 +80,8 @@ relate_files = expand("data/ngsRelate/v5--{ssp}--{pop}.ngsRelate.txt", zip, ssp 
 
 fold = ["0", "4"]
 #WS, SW, SW+WS, ALL
-nucs = ["AG,AC,TG,TC", "GA,GT,CA,CT", "AT,TA,GC,CG", "AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
+#nucs = ["AG,AC,TG,TC", "GA,GT,CA,CT", "AT,TA,GC,CG", "AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
+nucs = ["AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
 
 
 #SWITCH
@@ -114,6 +117,16 @@ print('\n'.join(raisd_outliers))
 #dadi_out = expand("data/dadi/RAiSD_Report.{ref}--{ssp}--{pop}_NUCS_msprime", zip, ref = REF, ssp = SSP, pop = POP)
 dadi_out = expand("data/dadi/RAiSD_Report.v5--{ssp}--{pop}_NUCS_msprime", zip, ssp = SSP, pop = POP)
 dadi_files = [m.replace("NUCS", n) for m in dadi_out for n in nucs]
+
+#"data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_mspms_stats.txt"
+
+stats = expand("data/dadi/v5--{ssp}--{pop}_fold4_NUCS_mspms_stats.txt", zip, ssp = SSP, pop = POP)
+stats_files = [m.replace("NUCS", n) for m in stats for n in nucs]
+
+
+stats_full = expand("data/dadi/v5--{ssp}--{pop}--FULL_mspms_stats.txt", zip, ssp = SSP, pop = POP)
+
+
 
 
 ############
@@ -151,43 +164,52 @@ for ref in ["v5"]:
         for k in ref_dict:
             all_files.append(f"data/ngsAdmix/{ref}--{ssp}_K{k}.qopt")
             all_files.append(f"data/ngsAdmix/v5_{ssp}_{k}_thin1M_random10_PalmarChico.qopt")
+           
         all_files.append(f"data/refs/{ref}/{ref}_FOLD")
         all_files.append(f"data/trip/trip_{ref}_FOLD")
         all_files.append(f"data/beagle/v5--{ssp}_100thin_random10_PalmarChico.beagle.gz")
         all_files.append(f"data/beagle/v5--{ssp}_100thin_PalmarChicoONLY.beagle.gz")
         for i in range(2,6,1):
             all_files.append(f"data/ngsAdmix/v5_{ssp}_{i}_thin1M_PalmarChicoONLY.qopt")    
-
+            #for ch in chroms:
+            #    all_files.append(f"data/ngsAdmix/v5_{ssp}_{i}_{ch}_thin1M_PalmarChicoONLY.qopt")
+ 
 #all_files.append("data/angsd_treemix/v5--trip--trip.mafscount.bed")
 #print('\n'.join(pi_files))
 #print(all_files)
 
 rule all:
     input:
-        #"data/trip/trip_til11.fa.gz",
+        ##"data/trip/trip_til11.fa.gz",
         "data/trip/trip_v5.fa.gz",
+        "data/trip/v5--trip--trip.mafs.gz",
+        "data/diplo/v5--diplo--diplo.mafs.gz",
+        "data/diplo/diplo_v5.fa.gz",
         "data/refs/v5/v5_FOLD",
-        "data/trip/trip_v5_FOLD",        
+        "data/trip/trip_v5_FOLD", 
         pi_files,
         mk_files,
-        relate_files,
         "data/angsd_treemix/v5_treemix.treeout.gz",
-        #"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
+        relate_files,
+        ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
         raisd_corrected,
         raisd_outliers,
         raisd_merged,
         ibd_files,
         dadi_files,
+        stats_files,
+        ##dadi_full,
+        stats_full,
         all_files, 
         mop_files
-        #vcf_files,
-        #mop_final,
+        ##vcf_files,
+        ##mop_final,
 
 
 include: "rules/process_raw.smk"
 include: "rules/mop.smk"
 include: "rules/popgen.smk"
-include: "rules/trip.smk"
+include: "rules/outgroup.smk"
 include: "rules/angsd.smk"
 include: "rules/mk.smk"
 include: "rules/ngsRelate.smk"

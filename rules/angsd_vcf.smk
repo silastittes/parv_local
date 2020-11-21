@@ -7,7 +7,6 @@ rule raisd_beagle:
         "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
     params:
         scratch = my_scratch,
-        #prefix = "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}",
         prefix = my_scratch + "{ref}--{ssp}--{pop}--{c}--{r1}--{r2}",
         final = "data/angsd_vcf/",
         chrom = "{c}",
@@ -28,9 +27,19 @@ rule raisd_beagle:
         mv {params.prefix}.arg {params.final}
         """
 
+#data/mop/v5--LR--random1_Palmar_Chico--chr1--0--308452471.bed
+rule vcf_mop:
+    input:
+        mop = "data/mop/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.bed",
+        vcf = "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
+    output:
+        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_mop.vcf"
+    shell:
+        "bedtools intersect -header -a {input.vcf} -b {input.mop} > {output}"
+
 rule IBDseq:
     input:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
+        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_mop.vcf"
     output:
         "data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2max{r2max}.hbd"
     params:

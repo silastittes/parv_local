@@ -1,7 +1,7 @@
 { "__default__" :
     {
         "p" : "med2",
-        "mem" : "5G",
+        "mem" : "12G",
         "time" : "3:50:00",
         "cpus-per-task" : 1,
         "name" : "{rule}.{wildcards}",
@@ -72,6 +72,15 @@
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },
     "chico_only_admix":
+    {
+        "cpus-per-task" : 10,
+        "mem" : "64G",
+        "time" : "100:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "chico_chrom":
     {
         "cpus-per-task" : 10,
         "mem" : "64G",
@@ -219,7 +228,7 @@
     {
         "cpus-per-task" : 1,
         "mem" : "4G",
-        "time" : "4:00:00",
+        "time" : "12:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
