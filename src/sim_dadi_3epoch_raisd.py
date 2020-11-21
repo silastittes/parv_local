@@ -34,28 +34,30 @@ parser.add_argument('-b', '--bps', nargs="?", type=int, required = True,
 args = parser.parse_args()
 
 
-def two_epoch(params, ns, pts):
+def three_epoch(params, ns, pts):
     """
-    Instantaneous size change some time ago.
-
-    params = (nu,T)
+    params = (nuB,nuF,TB,TF)
     ns = (n1,)
 
-    nu: Ratio of contemporary to ancient population size
-    T: Time in the past at which size change happened (in units of 2*Na 
-       generations) 
+    nuB: Ratio of bottleneck population size to ancient pop size
+    nuF: Ratio of contemporary to ancient pop size
+    TB: Length of bottleneck (in units of 2*Na generations) 
+    TF: Time since bottleneck recovery (in units of 2*Na generations) 
+
     n1: Number of samples in resulting Spectrum
     pts: Number of grid points to use in integration.
     """
-    nu,T = params
+    nuB,nuF,TB,TF = params
 
     xx = Numerics.default_grid(pts)
     phi = PhiManip.phi_1D(xx)
-    
-    phi = Integration.one_pop(phi, xx, T, nu)
+
+    phi = Integration.one_pop(phi, xx, TB, nuB)
+    phi = Integration.one_pop(phi, xx, TF, nuF)
 
     fs = Spectrum.from_phi(phi, ns, (xx,))
     return fs
+
 
 
 with open(args.sfs) as f:
@@ -64,11 +66,11 @@ with open(args.sfs) as f:
 
 fs = dadi.Spectrum(np.round(sfs, 0))
 
-params = (1, 1)
+params = (1, 1, 1, 1)
 ns = fs.sample_sizes
-pts = [int(ns[0]*3)]
+pts = [200]
 
-my_extrap_func = Numerics.make_extrap_log_func(two_epoch)
+my_extrap_func = Numerics.make_extrap_log_func(three_epoch)
 
 model = my_extrap_func(params, ns, pts)
 
@@ -76,15 +78,15 @@ ll_model = dadi.Inference.ll_multinom(model, fs)
 
 theta = dadi.Inference.optimal_sfs_scaling(model, fs)
 
-lower_bound, upper_bound = [1e-2, 1e-2], [1e2, 1e2]
+lower_bound, upper_bound = [1e-2, 1e-2, 1e-2, 1e-2], [1e2, 1e2, 1e2, 1e2]
 p0 = dadi.Misc.perturb_params(params, lower_bound=lower_bound, upper_bound=upper_bound)
-dadi_opt = dadi.Inference.optimize_log(p0, fs, my_extrap_func, pts, verbose=1, maxiter=20000, lower_bound=lower_bound, upper_bound=upper_bound)
+dadi_opt = dadi.Inference.optimize_log(p0, fs, my_extrap_func, pts, verbose=1, maxiter=10000, lower_bound=lower_bound, upper_bound=upper_bound)
 
 #p0 = dadi.Misc.perturb_params(params)
 #dadi_opt = dadi.Inference.optimize_log(p0, fs, my_extrap_func, pts, verbose=1, maxiter=1000)
 
 
-plt.plot(sfs[1:-1])
+plt.plot(sfs[1:-1]/theta)
 plt.plot(my_extrap_func(params, ns, pts)[1:-1])
 plt.xlabel("Allele frequency") 
 plt.ylabel("Frequency")
@@ -95,17 +97,20 @@ ns = ns
 bps = args.bps
 mu = 3e-8
 c = 1.6e-8
-nu, T = dadi_opt
+
+nu_B, nu_F, T_B, T_F = dadi_opt
 theta_sc = theta / sum(sfs)
 N_anc = theta_sc/(4*mu)
-N_0 = nu * N_anc
+N_0 = N_anc * nu_F
+N_B = N_anc * nu_B
+
 
 stat_file =  open(f"{args.prefix}_dadi_stat.txt", "w")
 
-print("pop\tnu\tT\ttheta\tN_0\tN_A", file = stat_file)
-print(f"{args.prefix}\t{nu}\t{T}\t{theta_sc}\t{N_0}\t{N_anc}", file = stat_file)
+print("pop\tnu_F\tnu_B\tT_B\tT_F\ttheta\tN_0\tN_A\tN_B", file = stat_file)
+print(f"{args.prefix}\t{nu_F}\t{nu_B}\t{T_B}\t{T_F}\t{theta_sc}\t{N_0}\t{N_anc}\t{N_B}", file = stat_file)
 
-msp_command = f"mspms {ns[0]} {args.nsims} --mutation-rate {4 * N_0 * mu * bps} --recombination {4 * N_0 * c * bps} {bps} --size-change {T/2} {1/nu} > {args.prefix}_msprime.txt"
+msp_command = f"mspms {ns[0]} {args.nsims} --mutation-rate {4 * N_0 * mu * bps} --recombination {4 * N_0 * c * bps} {bps} --size-change {T_F/2} {N_B/N_0} --size-change {(T_F+T_B)/2} {N_anc/N_0} > {args.prefix}_msprime.txt"
 os.system(msp_command)
 
 msp_command_file = open(f"{args.prefix}_mspms_command.txt", "w")
