@@ -15,6 +15,9 @@ parser.add_argument('-f', '--maf_file', type=str, required = True,
 parser.add_argument('-t', '--type', type=str, required = True,
             help='The string, known or unknown depending on if the maf file columns are chrom, pos, major, minor, ref, knownEM, pKEM, and nInd OR chrom, pos, major, minor, ref, unknownEM, and nInd. ')
 
+parser.add_argument('-m', '--minor_freq', type = float, required = True, 
+            help = 'Minimum minor allele frequency cutoff to consider a site as bi-alleleic.')
+
 
 args = parser.parse_args()
 
@@ -32,23 +35,32 @@ def nuc_count(maf_line, file_type):
         maf = float(unknownEM)
     if ref == major or ref == minor:
         nInd = int(nInd)
-        scale = 1/(2*nInd)
-        freq = maf+scale/2 -(maf+scale/2)%scale
-        maj_count = int((1-freq)*nInd*2)
-        min_count = int((freq)*nInd*2)
-        
-        nuccount = ','.join([minor.upper()]*min([min_count, 1]) + [major.upper()]*min([maj_count,1]))
-        
-        if nInd == 1:
-            nuc_dict[major.upper()] += 1
+        if maf > 0.5:
+            maf = 1 - maf
+        if maf >= args.minor_freq:
+            nuccount = f"{minor.upper()},{major.upper()}" 
         else:
-            nuc_dict[major.upper()] += maj_count
-            nuc_dict[minor.upper()] += min_count
-        nuctable = ','.join([f'{n}' for n in list(nuc_dict.values())]) 
-        #return f"{chrom}\t{pos-1}\t{pos}\t{major}\t{minor}\t{nuctable}"
-        #return f"{chrom}\t{pos-1}\t{pos}\t{nuctable}"
+            nuccount = f"{major.upper()}"   
+        
         return f"{chrom}\t{pos-1}\t{pos}\t{nuccount}"
 
+        #old appraoch
+        #scale = 1/(2*nInd)
+        #scale = args.minor_freq
+        #freq = maf+scale/2 -(maf+scale/2)%scale
+        #maj_count = int((1-freq)*nInd*2)
+        #min_count = int((freq)*nInd*2)
+        #nuccount = ','.join([minor.upper()]*min([min_count, 1]) + [major.upper()]*min([maj_count,1]))
+    #return f"{chrom}\t{pos-1}\t{pos}\t{major}\t{minor}\t{nuctable}"
+    #return f"{chrom}\t{pos-1}\t{pos}\t{nuctable}"
+ 
+         #if nInd == 1:
+            #    nuc_dict[major.upper()] += 1
+            #else:
+            #    nuc_dict[major.upper()] += maj_count
+            #    nuc_dict[minor.upper()] += min_count
+            #nuctable = ','.join([f'{n}' for n in list(nuc_dict.values())]) 
+        
 #maf_string = "chr1    242     T       C       G       0.050024        2.295941e-13    10"
 #print(nuc_count(maf_string))
 
