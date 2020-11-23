@@ -54,6 +54,33 @@ rule trip_beagle:
         -bam {input.bams} -out {params.prefix}
         """
 
+rule nuctable:
+    input:
+       "data/{out}/{ref}--{ssp}--{pop}.mafs.gz" 
+    output:
+        "data/{out}/{ref}--{ssp}--{pop}_nuctable.txt"
+    shell:
+        "python src/maf2nuccounts.py -f {input}  -t unknown -m 0.001  > {output}"
+
+rule anc_bed:
+    input:
+        expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = ["trip", "diplo"], ssp = ["trip", "diplo"], pop = ["trip", "diplo"])
+    output:
+        "data/anc/{ref}_anc.bed"
+    shell:
+        """
+        bedtools unionbedg -filler 'MISSING' -i {input} | grep -v MISSING | awk '$4 ~ /^[ATGC]$/ && $5 ~ /^[ATGC]$/ && $4 == $5 {{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}' > {output}
+        """
+
+rule anc_ref:
+    input:
+        gbed = "data/refs/{ref}/{ref}.gbed",
+        bed = "data/anc/{ref}_anc.bed"
+    output:
+        "data/anc/{ref}_anc.fa.gz"
+    shell:
+        "python src/impute_fasta.py -g {input.gbed} -b {input.bed} | gzip > {output}"
+
 #        mkdir -p {params.scratch}
 #        module load bio
 #        angsd -b {input.bams} -P 5 \

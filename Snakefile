@@ -145,11 +145,7 @@ ibd_files = [f.replace("R2", r) for f in ibd_files for r in ["0.7", "0.4"]]
 ## OTHER FILES ##
 #################
 
-all_files = []
-for ref in ["v5"]:
-#for ref in ["til11", "v5"]:
-    for ssp in ["Teo", "LR"]:
-        ref_dict = K_dict[f'{ssp}_k']
+        #vcf based stuff, not using
         #all_files.append(f"data/vcf/{ref}/raw/{ref}.vcf.gz")
         #all_files.appendf"data/vcf/{ref}/raw/{ref}.vcf.stats")
         #all_files.append(f"data/vcf/{ref}/filtered/{ref}_{ssp}_filtered.vcf.gz")
@@ -158,6 +154,23 @@ for ref in ["v5"]:
         #all_files.append(f"data/admix/{ref}_{ssp}_thin1M.{ref_dict}.Q")
         #all_files.append(f"data/admix/{ref}_{ssp}_thin1M.{ref_dict}.P")
         #all_files.append(f"data/admix/{ref}_{ssp}_{ref_dict}_thin1M.log")
+
+
+all_files = []
+for ref in ["v5"]:
+#for ref in ["til11", "v5"]:
+    all_files.append(f"data/trip/trip_{ref}.fa.gz")
+    all_files.append(f"data/diplo/diplo_{ref}.fa.gz")
+    all_files.append(f"data/trip/{ref}--trip--trip.mafs.gz")
+    all_files.append(f"data/diplo/{ref}--diplo--diplo.mafs.gz")
+    all_files.append(f"data/trip/{ref}--trip--trip_nuctable.txt")
+    all_files.append(f"data/diplo/{ref}--diplo--diplo_nuctable.txt")
+    all_files.append(f"data/anc/{ref}_anc.fa.gz")
+    all_files.append(f"data/refs/{ref}/{ref}_FOLD")
+    #all_files.append(f"")
+    all_files.append(f"data/angsd_treemix/{ref}_treemix.treeout.gz")
+    for ssp in ["Teo", "LR"]:
+        ref_dict = K_dict[f'{ssp}_k']
 
         #!!!
         all_files.append(f"data/beagle/{ref}--{ssp}.beagle.gz")
@@ -181,27 +194,27 @@ for ref in ["v5"]:
 rule all:
     input:
         ##"data/trip/trip_til11.fa.gz",
-        "data/trip/trip_v5.fa.gz",
-        "data/trip/v5--trip--trip.mafs.gz",
-        "data/diplo/v5--diplo--diplo.mafs.gz",
-        "data/diplo/diplo_v5.fa.gz",
-        "data/refs/v5/v5_FOLD",
-        "data/trip/trip_v5_FOLD", 
+        ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
+        #"data/trip/trip_v5.fa.gz",
+        #"data/trip/v5--trip--trip.mafs.gz",
+        #"data/diplo/v5--diplo--diplo.mafs.gz",
+        #"data/diplo/diplo_v5.fa.gz",
+        #"data/refs/v5/v5_FOLD",
+        #"data/trip/trip_v5_FOLD", 
+        #"data/angsd_treemix/v5_treemix.treeout.gz",
+        all_files, 
         pi_files,
         mk_files,
-        "data/angsd_treemix/v5_treemix.treeout.gz",
         relate_files,
-        ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
         raisd_corrected,
         raisd_outliers,
         raisd_merged,
         ibd_files,
         dadi_files,
         stats_files,
-        ##dadi_full,
         stats_full,
-        all_files, 
         mop_files
+        ##dadi_full,
         ##vcf_files,
         ##mop_final,
 
