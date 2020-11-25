@@ -30,15 +30,23 @@ with openfile(args.gbed) as g:
         #seq_dict[chrom] = ['N']*int(chrom_len)
         seq_dict[chrom] = int(chrom_len)
 
-bed_dict = {}
-with openfile(args.bed) as f:
-    for line in f:
-        chrom, start, end, nuc = line.strip().split()
-        bed_dict[f"{chrom}{start}"] = nuc 
-        #pos = int(start)
-        #seq_dict[chrom][pos] = nuc
+#bed_dict = {}
+#with openfile(args.bed) as f:
+#    for line in f:
+#        chrom, start, end, nuc = line.strip().split()
+#        bed_dict[f"{chrom}{start}"] = nuc 
+#        #pos = int(start)
+#        #seq_dict[chrom][pos] = nuc
 
 for seq_id, seq_len in seq_dict.items():
+    
+    bed_dict = {}
+    with openfile(args.bed) as f:
+        for line in f:
+            chrom, start, end, nuc = line.strip().split()
+            if chrom == seq_id:
+                bed_dict[f"{chrom}{start}"] = nuc
+    
     c_seq = ""
     for pos in range(seq_len):
         chrompos = f"{seq_id}{pos}"

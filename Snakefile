@@ -159,13 +159,14 @@ ibd_files = [f.replace("R2", r) for f in ibd_files for r in ["0.7", "0.4"]]
 all_files = []
 for ref in ["v5"]:
 #for ref in ["til11", "v5"]:
-    all_files.append(f"data/trip/trip_{ref}.fa.gz")
+    #all_files.append(f"data/trip/trip_{ref}.fa.gz")
+    #all_files.append(f"data/trip/{ref}--trip--trip_nuctable.txt")
+    
     all_files.append(f"data/diplo/diplo_{ref}.fa.gz")
-    all_files.append(f"data/trip/{ref}--trip--trip.mafs.gz")
-    all_files.append(f"data/diplo/{ref}--diplo--diplo.mafs.gz")
-    all_files.append(f"data/trip/{ref}--trip--trip_nuctable.txt")
+    all_files.append(f"data/trip/trip_{ref}.fa.gz")
+    all_files.append(f"data/lux/{ref}--lux--lux_nuctable.txt")
     all_files.append(f"data/diplo/{ref}--diplo--diplo_nuctable.txt")
-    all_files.append(f"data/anc/{ref}_anc.fa.gz")
+    all_files.append(f"data/anc/{ref}_anc.fa")
     all_files.append(f"data/refs/{ref}/{ref}_FOLD")
     #all_files.append(f"")
     all_files.append(f"data/angsd_treemix/{ref}_treemix.treeout.gz")
@@ -193,6 +194,8 @@ for ref in ["v5"]:
 
 rule all:
     input:
+        pi_files
+
         ##"data/trip/trip_til11.fa.gz",
         ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
         #"data/trip/trip_v5.fa.gz",
@@ -202,18 +205,21 @@ rule all:
         #"data/refs/v5/v5_FOLD",
         #"data/trip/trip_v5_FOLD", 
         #"data/angsd_treemix/v5_treemix.treeout.gz",
-        all_files, 
-        pi_files,
-        mk_files,
-        relate_files,
-        raisd_corrected,
-        raisd_outliers,
-        raisd_merged,
-        ibd_files,
-        dadi_files,
-        stats_files,
-        stats_full,
-        mop_files
+
+
+        #all_files, 
+        #pi_files
+        #mk_files,
+        #relate_files,
+        #raisd_corrected,
+        #raisd_outliers,
+        #raisd_merged,
+        #ibd_files,
+        #dadi_files,
+        #stats_files,
+        #stats_full,
+        #mop_files
+
         ##dadi_full,
         ##vcf_files,
         ##mop_final,

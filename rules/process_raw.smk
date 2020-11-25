@@ -60,14 +60,14 @@ rule thin_plink:
         """
 
 #data/trip/trip_v5.fa.gz  data/trip/trip_v5_FOLD
+#ref = "data/trip/trip_{ref}.fa",
 rule fold:
     input:
-        ref = "data/trip/trip_{ref}.fa",
-        #ref = "data/refs/{ref}/{ref}.fa",
+        ref = "data/refs/{ref}/{ref}.fa",
         gff = "data/refs/{ref}/{ref}.gff3.gz"
     output:
-        fold = "data/trip/trip_{ref}_FOLD",
-        fold_log = "data/trip/trip_{ref}_FOLD.log"
+        fold = "data/refs/{ref}/{ref}_FOLD",
+        fold_log = "data/refs/{ref}/{ref}_FOLD.log"
     shell:
         """
         python src/cds_fold/cds_fold.py {input.ref} {input.gff} -o {output.fold} > {output.fold_log}

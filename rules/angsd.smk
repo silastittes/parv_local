@@ -1,7 +1,6 @@
 rule full_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        trip = "data/trip/trip_{ref}.fa.gz",
         bams = "data/bamlist/{ref}-{ssp}-allBams.txt"
     output:
         "data/beagle/{ref}--{ssp}.beagle.gz"
@@ -143,7 +142,8 @@ rule chico_chrom:
 rule pop_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        trip = "data/trip/trip_{ref}.fa.gz",
+        #trip = "data/trip/trip_{ref}.fa.gz",
+        trip = "data/anc/v5_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
     output:
         saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz",
@@ -152,7 +152,7 @@ rule pop_beagle:
     shell:
         """
         module load angsd
-        angsd -GL 1 -P 5 \
+        angsd -GL 1 -P 15 \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0  -C 50  -minMapQ 30 -minQ 30 \
         -ref {input.ref}  -anc {input.trip} \
         -doMaf 2 -doMajorMinor 4 -doSaf 1 \
@@ -162,7 +162,6 @@ rule pop_beagle:
 rule pop_sfs:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        trip = "data/trip/trip_{ref}.fa.gz",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt",
         saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz"
     output:

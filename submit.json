@@ -19,8 +19,8 @@
     },
     "trip_bam":
     {
-        "cpus-per-task" : 48,
-        "mem" : "48G",
+        "cpus-per-task" : 32,
+        "mem" : "96G",
         "time" : "204:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
@@ -64,7 +64,7 @@
     },
     "admix":
     {
-        "cpus-per-task" : 10,
+        "cpus-per-task" : 15,
         "mem" : "64G",
         "time" : "100:00:00",
         "p" : "med2",
@@ -73,7 +73,7 @@
     },
     "chico10_admix":
     {
-        "cpus-per-task" : 10,
+        "cpus-per-task" : 15,
         "mem" : "64G",
         "time" : "100:00:00",
         "p" : "med2",
@@ -82,7 +82,7 @@
     },
     "chico_only_admix":
     {
-        "cpus-per-task" : 10,
+        "cpus-per-task" : 15,
         "mem" : "64G",
         "time" : "100:00:00",
         "p" : "med2",
@@ -91,7 +91,7 @@
     },
     "chico_chrom":
     {
-        "cpus-per-task" : 10,
+        "cpus-per-task" : 15,
         "mem" : "64G",
         "time" : "100:00:00",
         "p" : "med2",
@@ -100,7 +100,7 @@
     },
     "pop_beagle":
     {
-        "cpus-per-task" : 5,
+        "cpus-per-task" : 15,
         "mem" : "64G",
         "time" : "100:00:00",
         "p" : "med2",
@@ -112,6 +112,15 @@
         "cpus-per-task" : 5,
         "mem" : "24G",
         "time" : "20:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "anc_ref":
+        {
+        "cpus-per-task" : 1,
+        "mem" : "48G",
+        "time" : "5:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"

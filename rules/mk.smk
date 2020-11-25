@@ -1,7 +1,8 @@
 rule fold_nuc_sites:
     input:
         maf = "data/angsd_pi/{ref}--{ssp}--{pop}.mafs.gz",
-        fold = "data/trip/trip_v5_FOLD{fold}",
+        #fold = "data/trip/trip_v5_FOLD{fold}",
+        fold = "data/refs/{ref}/{ref}_FOLD{fold}",
     output:
         "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt"
     params:
@@ -27,7 +28,8 @@ rule site_index:
 rule sfs_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        trip = "data/trip/trip_{ref}.fa.gz",
+        #trip = "data/trip/trip_{ref}.fa.gz",
+        trip = "data/anc/{ref}_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt",
         sites_bin = "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt.bin",
         sites = "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt"

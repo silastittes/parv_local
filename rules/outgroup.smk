@@ -53,6 +53,7 @@ rule trip_beagle:
         -doCounts 1 -doMaf 2 -doMajorMinor 4 \
         -bam {input.bams} -out {params.prefix}
         """
+        #-setMinDepthInd 5 \
 
 rule nuctable:
     input:
@@ -64,22 +65,26 @@ rule nuctable:
 
 rule anc_bed:
     input:
-        expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = ["trip", "diplo"], ssp = ["trip", "diplo"], pop = ["trip", "diplo"])
+        "data/diplo/{ref}--diplo--diplo_nuctable.txt"
+        #expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = ["lux", "diplo"], ssp = ["lux", "diplo"], pop = ["lux", "diplo"])
     output:
         "data/anc/{ref}_anc.bed"
     shell:
         """
-        bedtools unionbedg -filler 'MISSING' -i {input} | grep -v MISSING | awk '$4 ~ /^[ATGC]$/ && $5 ~ /^[ATGC]$/ && $4 == $5 {{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}' > {output}
+        awk '$4 !~ /,/{{print $0}}' {input} > {output}    
         """
+
+#bedtools unionbedg -filler 'MISSING' -i {input} | grep -v MISSING | awk '$4 ~ /^[ATGC]$/ && $5 ~ /^[ATGC]$/ && $4 == $5 {{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}' > {output}
+#bedtools unionbedg -filler MISSING -i {input} awk '$4 !~ /,/ && $5 !~ /,/ {{print $0}}' | awk '{{if($4 == $5){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}; if($4 ~ /MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $5}}; if($5 ~/MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}}}' > {output}
 
 rule anc_ref:
     input:
         gbed = "data/refs/{ref}/{ref}.gbed",
         bed = "data/anc/{ref}_anc.bed"
     output:
-        "data/anc/{ref}_anc.fa.gz"
+        "data/anc/{ref}_anc.fa"
     shell:
-        "python src/impute_fasta.py -g {input.gbed} -b {input.bed} | gzip > {output}"
+        "python src/impute_fasta.py -g {input.gbed} -b {input.bed} > {output}"
 
 #        mkdir -p {params.scratch}
 #        module load bio

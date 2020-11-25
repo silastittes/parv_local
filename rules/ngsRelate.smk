@@ -1,7 +1,8 @@
 rule ngsrelate_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        trip = "data/trip/trip_{ref}.fa.gz",
+        #trip = "data/trip/trip_{ref}.fa.gz",
+        trip = "data/anc/{ref}_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
     output:
         glf = "data/ngsRelate/{ref}--{ssp}--{pop}.glf.gz",
