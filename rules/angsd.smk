@@ -23,6 +23,7 @@ rule full_beagle:
         mv {params.prefix}.beagle.gz {params.final}
         mv {params.prefix}.mafs.gz {params.final}
         mv {params.prefix}.arg {params.final}
+ 
         """
 
 rule sample_gl:
@@ -138,25 +139,49 @@ rule chico_chrom:
         """
         
         
-    
+
+#data/angsd_pi/v5--Teo--El_Rodeo.arg
+#data/angsd_pi/v5--Teo--El_Rodeo.mafs.gz
+#data/angsd_pi/v5--Teo--El_Rodeo.saf.gz
+#data/angsd_pi/v5--Teo--El_Rodeo.saf.idx
+#data/angsd_pi/v5--Teo--El_Rodeo.saf.pos.gz
+#data/angsd_pi/v5--Teo--El_Rodeo.sfs    
+#trip = "data/trip/trip_{ref}.fa.gz",
+
 rule pop_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        #trip = "data/trip/trip_{ref}.fa.gz",
-        trip = "data/anc/v5_anc.fa",
+        trip = "data/anc/{ref}_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
     output:
-        saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz",
+        saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz"
     params:
-        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}"
+        scratch = my_scratch,
+        final = "data/angsd_pi/",
+        prefix = my_scratch + "{ref}--{ssp}--{pop}"
     shell:
         """
+        mkdir -p {params.scratch}
+        
+        rm -f {params.prefix}.arg
+        rm -f {params.prefix}.mafs.gz
+        rm -f {params.prefix}.saf.gz
+        rm -f {params.prefix}.saf.idx
+        rm -f {params.prefix}.saf.pos.gz
+        
         module load angsd
         angsd -GL 1 -P 15 \
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0  -C 50  -minMapQ 30 -minQ 30 \
         -ref {input.ref}  -anc {input.trip} \
         -doMaf 2 -doMajorMinor 4 -doSaf 1 \
         -bam {input.bams} -out {params.prefix}
+        
+         mv {params.prefix}.arg {params.final}
+         mv {params.prefix}.mafs.gz {params.final}
+         mv {params.prefix}.saf.gz {params.final}
+         mv {params.prefix}.saf.idx {params.final}
+         mv {params.prefix}.saf.pos.gz {params.final}
+ 
         """
 
 rule pop_sfs:

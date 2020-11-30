@@ -63,19 +63,23 @@ rule nuctable:
     shell:
         "python src/maf2nuccounts.py -f {input}  -t unknown -m 0.001  > {output}"
 
+
+grps = ["lux", "diplo"]
 rule anc_bed:
     input:
-        "data/diplo/{ref}--diplo--diplo_nuctable.txt"
-        #expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = ["lux", "diplo"], ssp = ["lux", "diplo"], pop = ["lux", "diplo"])
+        #"data/diplo/{ref}--diplo--diplo_nuctable.txt"
+        expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = grps, ssp = grps, pop = grps)
     output:
         "data/anc/{ref}_anc.bed"
     shell:
         """
-        awk '$4 !~ /,/{{print $0}}' {input} > {output}    
+        bedtools unionbedg -filler MISSING -i {input} | awk '$4 !~ /,/ && $5 !~ /,/ {{print $0}}' | awk '{{if($4 == $5){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}; if($4 ~ /MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $5}}}}' > {output}
         """
 
+#bedtools unionbedg -filler MISSING -i {input} | awk '$4 !~ /,/ && $5 !~ /,/ {{print $0}}' | awk '{{if($4 == $5){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}; if($4 ~ /MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $5}}; if($5 ~/MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}}}' > {output}
+#alternatives for getting ancestral nucleotides
+#awk '$4 !~ /,/{{print $0}}' {input} > {output}    
 #bedtools unionbedg -filler 'MISSING' -i {input} | grep -v MISSING | awk '$4 ~ /^[ATGC]$/ && $5 ~ /^[ATGC]$/ && $4 == $5 {{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}' > {output}
-#bedtools unionbedg -filler MISSING -i {input} awk '$4 !~ /,/ && $5 !~ /,/ {{print $0}}' | awk '{{if($4 == $5){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}; if($4 ~ /MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $5}}; if($5 ~/MISSING/){{print $1 "\\t" $2 "\\t" $3 "\\t" $4}}}}' > {output}
 
 rule anc_ref:
     input:
