@@ -154,11 +154,14 @@ rule pop_beagle:
         trip = "data/anc/{ref}_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
     output:
-        saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz"
+        saf = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.saf.gz"
     params:
         scratch = my_scratch,
         final = "data/angsd_pi/",
-        prefix = my_scratch + "{ref}--{ssp}--{pop}"
+        prefix = my_scratch + "{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
+        chrom = "{chrom}",
+        start = "{start}",
+        end = "{end}"
     shell:
         """
         mkdir -p {params.scratch}
@@ -174,6 +177,7 @@ rule pop_beagle:
         -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1 -trim 0  -C 50  -minMapQ 30 -minQ 30 \
         -ref {input.ref}  -anc {input.trip} \
         -doMaf 2 -doMajorMinor 4 -doSaf 1 \
+        -r {params.chrom}:{params.start}-{params.end} \
         -bam {input.bams} -out {params.prefix}
         
          mv {params.prefix}.arg {params.final}
@@ -188,26 +192,26 @@ rule pop_sfs:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt",
-        saf = "data/angsd_pi/{ref}--{ssp}--{pop}.saf.gz"
+        saf = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.saf.gz"
     output:
-        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}.sfs"
+        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.sfs"
     params:
-        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}",
+        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
     shell:
         """
         module load angsd
-        realSFS {params.prefix}.saf.idx -P 10 > {params.prefix}.sfs
+        realSFS {params.prefix}.saf.idx  -P 10 > {params.prefix}.sfs
         realSFS saf2theta {params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname {params.prefix}
         """
 
 rule pop_pi:
     input:
-        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}.sfs"
+        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.sfs"
     output:
-        pi = "data/angsd_pi/{ref}--{ssp}--{pop}.{win}BP_theta.thetasWindow.gz.pestPG"
+        pi = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.{win}BP_theta.thetasWindow.gz.pestPG"
     params:
-        prefix_in = "data/angsd_pi/{ref}--{ssp}--{pop}",
-        prefix_out = "data/angsd_pi/{ref}--{ssp}--{pop}.{win}BP_theta",
+        prefix_in = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
+        prefix_out = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.{win}BP_theta",
         win = "{win}"
     shell:
         """
@@ -215,6 +219,16 @@ rule pop_pi:
         thetaStat do_stat {params.prefix_in}.thetas.idx -win {params.win} -step {params.win} -outnames {params.prefix_out}.thetasWindow.gz
         """
 
+rule cat_pi:
+    input:
+        list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{pop}}--{chrom}--{start}--{end}.{{win}}_theta.thetasWindow.gz.pestPG", zip, chrom = mCHROM, start = mSTART, end = mEND)))
+    output:
+        "data/angsd_pi/{ref}--{ssp}--{pop}.{win}_theta.txt"
+    shell:
+        """
+        cat <(head -q -n1 {input} | uniq) <(tail -q -n+2 {input}) > {output}
+        """
+
 #thin
 #awk 'NR ==1 || NR % 10 == 0' pi_test.txt  | wc -l  
-#NGSadmix -likes angsd_til11_teo.beagle.gz -K 6 -P 10 -o ngsadmix_til11_teo -minMaf 0.05
+#NGSadmixd -q -n1  v5--LR--San_Lorenzo--chr*100000BP_theta.thetasWindow.gz.pestPG| uniq -likes angsd_til11_teo.beagle.gz -K 6 -P 10 -o ngsadmix_til11_teo -minMaf 0.05

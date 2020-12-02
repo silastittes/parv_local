@@ -1,6 +1,6 @@
 rule fold_nuc_sites:
     input:
-        maf = "data/angsd_pi/{ref}--{ssp}--{pop}.mafs.gz",
+        maf = expand("data/angsd_pi/{{ref}}--{{ssp}}--{{pop}}--{chrom}--{start}--{end}.mafs.gz", chrom = mCHROM, start = mSTART, end = mEND),
         #fold = "data/trip/trip_v5_FOLD{fold}",
         fold = "data/refs/{ref}/{ref}_FOLD{fold}",
     output:

@@ -145,7 +145,7 @@
     },
    "pop_sfs":
     {   
-        "cpus-per-task" : 5,
+        "cpus-per-task" : 10,
         "mem" : "64G",
         "time" : "10:00:00",
         "p" : "med2",

@@ -47,10 +47,12 @@ chroms = list(set(mCHROM))
 
 #SWITCH
 #pi_files = expand("data/angsd_pi/{ref}--{ssp}--{pop}.{win}kb_theta.thetasWindow.gz.pestPG", zip, ref = REF, pop = POP, ssp = SSP)
-pi_files = expand("data/angsd_pi/v5--{ssp}--{pop}.WINDOWBP_theta.thetasWindow.gz.pestPG", zip, ssp = SSP, pop = POP)
-
+#pi_files = expand("data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.WINDOWBP_theta.thetasWindow.gz.pestPG", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+pi_files = expand("data/angsd_pi/v5--{ssp}--{pop}--{chrom}--{start}--{end}.WINDOWBP_theta.thetasWindow.gz.pestPG", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 pi_files = [p.replace("WINDOW", w) for p in pi_files for w in ["1000", "100000", "1000000"]]
 
+pi_full =  expand("data/angsd_pi/v5--{ssp}--{pop}.WINDOWBP_theta.txt", zip, pop = POP, ssp = SSP)
+pi_full = [p.replace("WINDOW", w) for p in pi_full for w in ["1000", "100000", "1000000"]]
 
 ##########
 ##  VCF ##
@@ -194,7 +196,8 @@ for ref in ["v5"]:
 
 rule all:
     input:
-        pi_files
+        pi_files,
+        pi_full
 
         ##"data/trip/trip_til11.fa.gz",
         ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
@@ -234,4 +237,4 @@ include: "rules/mk.smk"
 include: "rules/ngsRelate.smk"
 include: "rules/treemix.smk"
 include: "rules/angsd_vcf.smk"
-include: "rules/raisd_dadi.smk"
+include: "rules/raisd_demography.smk"

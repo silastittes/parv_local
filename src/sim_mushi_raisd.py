@@ -25,8 +25,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-i', '--ID', type=str, required = True,
             help='population ID to include in output files where appropriate.')
 
-parser.add_argument('-s', '--sfs', type=str, required = True,
-            help='Input file containing the unfolded sfs on the first line, white space delimited.')
+parser.add_argument('-s', '--sfs', type=str, nargs='+', required = True,
+            help='One or more input files containing the unfolded sfs on the first line, white space delimited.')
 
 parser.add_argument('-p', '--prefix', type=str, required = True,
             help='String to add to output files. If a path is included, raisd files will be named my the final field after splitting on back slashes.')
@@ -45,9 +45,18 @@ args = parser.parse_args()
 mu = 1e-7
 c = 1.6e-8
 
-with open(args.sfs) as f:
-    sfs = f.readlines()[0].split()
-    sfs = [float(s) for s in sfs]
+first = True
+for sfs_file in args.sfs:
+    with open(sfs_file) as f:
+        sfs = f.readlines()[0].split()
+        sfs = np.array([float(s) for s in sfs])
+    if first:
+        sfs = sfs
+        first = False
+    else:
+        sfs += sfs
+
+print(sfs)
 
 t = np.logspace(np.log10(1), np.log10(500000), 100)
 ksfs = mushi.kSFS(np.array(sfs[1:-1]))

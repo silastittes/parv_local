@@ -90,6 +90,20 @@ rule anc_ref:
     shell:
         "python src/impute_fasta.py -g {input.gbed} -b {input.bed} > {output}"
 
+
+
+rule diplomaf2count:
+    input:
+        "data/diplo/{ref}--diplo--diplo.mafs.gz"
+    output:
+        "data/angsd_treemix/{ref}--diplo--diplo.mafscount.bed"
+    shell:
+        """
+        zcat < {input} | awk 'NR>1{{scale=1/(2*$8); freq = $7+scale/2 -($7+scale/2)%scale; print $1 "\\t" $2-1 "\\t" $2 "\\t" int(freq*$8*2) "," int((1-freq)*$8*2)}}' > {output}
+        """
+
+
+
 #        mkdir -p {params.scratch}
 #        module load bio
 #        angsd -b {input.bams} -P 5 \
