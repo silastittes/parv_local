@@ -1,6 +1,5 @@
 import re
 
-
 my_scratch = "/scratch/stittes/"
 
 def natural_sort(l): 
@@ -82,8 +81,8 @@ relate_files = expand("data/ngsRelate/v5--{ssp}--{pop}.ngsRelate.txt", zip, ssp 
 
 fold = ["0", "4"]
 #WS, SW, SW+WS, ALL
-#nucs = ["AG,AC,TG,TC", "GA,GT,CA,CT", "AT,TA,GC,CG", "AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
-nucs = ["AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
+nucs = ["AG,AC,TG,TC", "GA,GT,CA,CT", "AT,TA,GC,CG", "AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
+#nucs = ["AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
 
 
 #SWITCH
@@ -170,6 +169,7 @@ for ref in ["v5"]:
     all_files.append(f"data/diplo/{ref}--diplo--diplo_nuctable.txt")
     all_files.append(f"data/anc/{ref}_anc.fa")
     all_files.append(f"data/refs/{ref}/{ref}_FOLD")
+    all_files.append(f"data/refs/{ref}/{ref}_500M_sites.txt")
     #all_files.append(f"")
     all_files.append(f"data/angsd_treemix/{ref}_treemix.treeout.gz")
     for ssp in ["Teo", "LR"]:
@@ -196,32 +196,28 @@ for ref in ["v5"]:
 
 rule all:
     input:
-        pi_files,
-        pi_full
-
-        ##"data/trip/trip_til11.fa.gz",
+        ##"data/trip/trip_til11.fa.gz",        
         ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
-        #"data/trip/trip_v5.fa.gz",
-        #"data/trip/v5--trip--trip.mafs.gz",
-        #"data/diplo/v5--diplo--diplo.mafs.gz",
-        #"data/diplo/diplo_v5.fa.gz",
-        #"data/refs/v5/v5_FOLD",
-        #"data/trip/trip_v5_FOLD", 
         #"data/angsd_treemix/v5_treemix.treeout.gz",
-
-
-        #all_files, 
-        #pi_files
-        #mk_files,
-        #relate_files,
+        "data/trip/trip_v5.fa.gz",
+        "data/trip/v5--trip--trip.mafs.gz",
+        "data/diplo/v5--diplo--diplo.mafs.gz",
+        "data/diplo/diplo_v5.fa.gz",
+        "data/refs/v5/v5_FOLD",
+        "data/trip/trip_v5_FOLD", 
+        mop_files,
+        all_files, 
+        pi_files,
+        pi_full,
+        mk_files,
+        relate_files,
+        ibd_files
         #raisd_corrected,
         #raisd_outliers,
         #raisd_merged,
-        #ibd_files,
         #dadi_files,
         #stats_files,
         #stats_full,
-        #mop_files
 
         ##dadi_full,
         ##vcf_files,

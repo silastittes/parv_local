@@ -53,6 +53,15 @@
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },
+    "random_sites":
+    {
+        "cpus-per-task" : 1,
+        "mem" : "48G",
+        "time" : "4:00:00",
+        "p" : "med2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
     "full_beagle":
     {
         "cpus-per-task" : 30,
@@ -164,7 +173,7 @@
     "ngsRelate":
     {
         "cpus-per-task" : 5,
-        "mem" : "120G",
+        "mem" : "64G",
         "time" : "24:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",

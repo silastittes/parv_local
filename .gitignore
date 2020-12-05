@@ -16,3 +16,6 @@ slurm_log/
 figures/
 src/ibdseq.r1206.jar
 src/pcangsd/
+snakemakes/
+notebooks/bgs_bestfit.rds
+notebooks/bgs_fullfit.rds
