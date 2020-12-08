@@ -2,6 +2,7 @@ rule ngsrelate_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         sites="data/refs/{ref}/{ref}_500M_sites.txt",
+        sites_bin="data/refs/{ref}/{ref}_500M_sites.txt.bin",
         trip = "data/anc/{ref}_anc.fa",
         bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
     output:

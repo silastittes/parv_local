@@ -83,5 +83,19 @@ rule random_sites:
         "data/refs/{ref}/{ref}_500M_sites.txt"
     shell:
         """
-        bedtools random -n 500000000 -l 1 -g {input} | bedtools sort -i stdin | awk '{{print $1 "\\t" $3}}' > {output}
-        """            
+        bedtools random -n 500000000 -l 1 -g {input} |  sort -k1,1 -k2,2n | awk '{{print $1 "\\t" $3}}' > {output}
+        """   
+
+rule index_random:
+    input:
+        "data/refs/{ref}/{ref}_500M_sites.txt"
+    output:
+        "data/refs/{ref}/{ref}_500M_sites.txt.bin"
+    shell:
+        """
+        module load angsd
+        angsd sites index {input}
+        """
+
+
+         

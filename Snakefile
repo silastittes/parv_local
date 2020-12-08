@@ -116,17 +116,20 @@ print('\n'.join(raisd_outliers))
 
 #SWTICH
 #dadi_out = expand("data/dadi/RAiSD_Report.{ref}--{ssp}--{pop}_NUCS_msprime", zip, ref = REF, ssp = SSP, pop = POP)
-dadi_out = expand("data/dadi/RAiSD_Report.v5--{ssp}--{pop}_NUCS_msprime", zip, ssp = SSP, pop = POP)
-dadi_files = [m.replace("NUCS", n) for m in dadi_out for n in nucs]
 
-#"data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_mspms_stats.txt"
+#dadi_out = expand("data/dadi/RAiSD_Report.v5--{ssp}--{pop}_NUCS_msprime", zip, ssp = SSP, pop = POP)
+#dadi_files = [m.replace("NUCS", n) for m in dadi_out for n in nucs]
+#stats = expand("data/dadi/v5--{ssp}--{pop}_fold4_NUCS_mspms_stats.txt", zip, ssp = SSP, pop = POP)
+#stats_files = [m.replace("NUCS", n) for m in stats for n in nucs]
+#stats_full = expand("data/dadi/v5--{ssp}--{pop}--FULL_mspms_stats.txt", zip, ssp = SSP, pop = POP)
 
-stats = expand("data/dadi/v5--{ssp}--{pop}_fold4_NUCS_mspms_stats.txt", zip, ssp = SSP, pop = POP)
-stats_files = [m.replace("NUCS", n) for m in stats for n in nucs]
 
 
-stats_full = expand("data/dadi/v5--{ssp}--{pop}--FULL_mspms_stats.txt", zip, ssp = SSP, pop = POP)
+###########
+## MUSHI ##
+##########
 
+mushi_out = expand("data/mushi/RAiSD_Report.v5--{ssp}--{pop}--msprime", zip, ssp = SSP, pop = POP)
 
 
 
@@ -162,20 +165,20 @@ for ref in ["v5"]:
 #for ref in ["til11", "v5"]:
     #all_files.append(f"data/trip/trip_{ref}.fa.gz")
     #all_files.append(f"data/trip/{ref}--trip--trip_nuctable.txt")
-    
+  
     all_files.append(f"data/diplo/diplo_{ref}.fa.gz")
     all_files.append(f"data/trip/trip_{ref}.fa.gz")
     all_files.append(f"data/lux/{ref}--lux--lux_nuctable.txt")
     all_files.append(f"data/diplo/{ref}--diplo--diplo_nuctable.txt")
+    all_files.append(f"data/diplo/{ref}--diplo--diplo.mafs.gz")
     all_files.append(f"data/anc/{ref}_anc.fa")
     all_files.append(f"data/refs/{ref}/{ref}_FOLD")
-    all_files.append(f"data/refs/{ref}/{ref}_500M_sites.txt")
+    all_files.append(f"data/anc/{ref}_anc_FOLD")
+    #all_files.append(f"data/refs/{ref}/{ref}_500M_sites.txt")
     #all_files.append(f"")
     all_files.append(f"data/angsd_treemix/{ref}_treemix.treeout.gz")
     for ssp in ["Teo", "LR"]:
         ref_dict = K_dict[f'{ssp}_k']
-
-        #!!!
         all_files.append(f"data/beagle/{ref}--{ssp}.beagle.gz")
         for k in ref_dict:
             all_files.append(f"data/ngsAdmix/{ref}--{ssp}_K{k}.qopt")
@@ -196,22 +199,16 @@ for ref in ["v5"]:
 
 rule all:
     input:
-        ##"data/trip/trip_til11.fa.gz",        
         ##"data/angsd_treemix/v5_treemix_filtered.fourpop.txt", #!!!
-        #"data/angsd_treemix/v5_treemix.treeout.gz",
-        "data/trip/trip_v5.fa.gz",
-        "data/trip/v5--trip--trip.mafs.gz",
         "data/diplo/v5--diplo--diplo.mafs.gz",
-        "data/diplo/diplo_v5.fa.gz",
-        "data/refs/v5/v5_FOLD",
-        "data/trip/trip_v5_FOLD", 
         mop_files,
         all_files, 
         pi_files,
         pi_full,
         mk_files,
         relate_files,
-        ibd_files
+        ibd_files,
+        mushi_out
         #raisd_corrected,
         #raisd_outliers,
         #raisd_merged,
@@ -233,4 +230,4 @@ include: "rules/mk.smk"
 include: "rules/ngsRelate.smk"
 include: "rules/treemix.smk"
 include: "rules/angsd_vcf.smk"
-include: "rules/raisd_demography.smk"
+include: "rules/demography.smk"

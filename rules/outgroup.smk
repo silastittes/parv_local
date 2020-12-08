@@ -91,6 +91,24 @@ rule anc_ref:
         "python src/impute_fasta.py -g {input.gbed} -b {input.bed} > {output}"
 
 
+rule fold_anc:
+    input:
+        ref = "data/anc/{ref}_anc.fa",
+        gff = "data/refs/{ref}/{ref}.gff3.gz"
+    output:
+        fold = "data/anc/{ref}_anc_FOLD",
+        fold4 = "data/anc/{ref}_anc_FOLD4",
+        fold0 = "data/anc/{ref}_anc_FOLD0",
+        fold_log = "data/anc/{ref}_anc_FOLD.log"
+    shell:
+        """
+        python src/cds_fold/cds_fold.py {input.ref} {input.gff} -o {output.fold} > {output.fold_log}
+        awk '$3 ~ /4/' {output.fold} > {output.fold}4
+        awk '$3 ~ /0/' {output.fold} > {output.fold}0
+        """
+
+
+
 
 rule diplomaf2count:
     input:

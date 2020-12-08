@@ -17,5 +17,8 @@ figures/
 src/ibdseq.r1206.jar
 src/pcangsd/
 snakemakes/
+playground/
 notebooks/bgs_bestfit.rds
 notebooks/bgs_fullfit.rds
+notebooks/bgs_bestfit_mu-7.rds
+notebooks/bgs_bestfit_mu-8.rds
