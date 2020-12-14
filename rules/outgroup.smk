@@ -102,7 +102,7 @@ rule fold_anc:
         fold_log = "data/anc/{ref}_anc_FOLD.log"
     shell:
         """
-        python src/cds_fold/cds_fold.py {input.ref} {input.gff} -o {output.fold} > {output.fold_log}
+        python src/cds_fold/cds_fold.py -c {input.ref} {input.gff} -o {output.fold} > {output.fold_log}
         awk '$3 ~ /4/' {output.fold} > {output.fold}4
         awk '$3 ~ /0/' {output.fold} > {output.fold}0
         """
