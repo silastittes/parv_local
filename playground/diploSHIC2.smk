@@ -12,8 +12,8 @@ sim_bps = 55000
 site_idx = list(range(11))
 sweep_locs = [0.045454545454545456, 0.13636363636363635, 0.22727272727272727, 0.3181818181818182, 0.4090909090909091, \
     0.5, 0.5909090909090909, 0.6818181818181818, 0.7727272727272727, 0.8636363636363636, 0.9545454545454546]
-tau = [[0.0, 10.0]]
-alpha = [[0.005, 0.05]]
+tau = [[0.0, 0.0]]
+alpha = [[0.01, 0.05]]
 
 def build_discoal(discoal_path, discoal_file, sweep_locs, sim_bps, tau, alpha, mu, out_path, out_prefix):
     with open(discoal_file) as d:
@@ -45,7 +45,9 @@ def build_discoal(discoal_path, discoal_file, sweep_locs, sim_bps, tau, alpha, m
                     print(f"{soft_string}", file = s)
 rule all:
     input:
-        [f"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.weights.hdf5" for s in alpha for t in tau]
+        [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.pred" for s in alpha for t in tau],
+        [f"data/diploshic/fvec_vcf/v5--Teo--random2_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.fvec" for s in alpha for t in tau]
+        #[f"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.weights.hdf5" for s in alpha for t in tau]
         #[f"data/diploshic/discoal/SOFT--v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}--window_1.out.gz" for s in alpha for t in tau]
         #"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s0_0.01--tau0_0.05.weights.hdf5"
 
@@ -71,6 +73,7 @@ rule discoal:
 rule mask:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
+        gbed = "data/refs/{ref}/{ref}.gbed",
         bed = "data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed"
     output:
         mask_chrom = temp("data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa"),
@@ -80,9 +83,9 @@ rule mask:
     shell:
         """
         samtools faidx {input.ref} {params.chrom} > {output.fasta_chrom}
-        bedtools maskfasta -fi {output.fasta_chrom} -bed {input.bed} -fo {output.mask_chrom} 
+        bedtools complement -g {input.gbed} -i {input.bed} | bedtools maskfasta -fi {output.fasta_chrom} -bed stdin -fo {output.mask_chrom} 
         """
-
+#bedtools maskfasta -fi {output.fasta_chrom} -bed {input.bed} -fo {output.mask_chrom} 
 rule fvecsim:
     input:
         mask = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa",
@@ -134,6 +137,30 @@ rule train:
         outdir = "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/" 
     shell:
         "python {diploshic} train {params.outdir} {params.outdir} {params.prefix}"
+
+
+rule fvec_vcf:
+    input:
+        vcf = "data/angsd_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.gz",
+        mask = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa"
+    output:
+        "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.fvec"
+    params:
+        chrom = "{chrom}",
+        end = "{end}"
+    shell:
+        "python src/diploSHIC/diploSHIC.py fvecVcf diploid {input.vcf} {params.chrom} {params.end} {output} --winSize {sim_bps}  --maskFileName {input.mask}"
+
+rule emp_predict:
+    input:
+        wt = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.weights.hdf5",
+        json = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.json",
+        fvec = "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.fvec"
+    output:
+        "data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.pred"
+    shell:
+        "python src/diploSHIC/diploSHIC.py predict {input.json} {input.wt} {input.fvec} {output}"
+
 
 
 #include: "../rules/demography.smk"
