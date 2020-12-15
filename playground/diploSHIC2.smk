@@ -12,8 +12,8 @@ sim_bps = 55000
 site_idx = list(range(11))
 sweep_locs = [0.045454545454545456, 0.13636363636363635, 0.22727272727272727, 0.3181818181818182, 0.4090909090909091, \
     0.5, 0.5909090909090909, 0.6818181818181818, 0.7727272727272727, 0.8636363636363636, 0.9545454545454546]
-tau = [[0.0, 0.0]]
-alpha = [[0.01, 0.05]]
+tau = [[1e4, 5e4], [0.0, 1e4]]
+alpha = [[5e-5, 1e-4], [1e-4, 5e-4], [5e-4, 1e-3]]
 
 def build_discoal(discoal_path, discoal_file, sweep_locs, sim_bps, tau, alpha, mu, out_path, out_prefix):
     with open(discoal_file) as d:
@@ -46,6 +46,7 @@ def build_discoal(discoal_path, discoal_file, sweep_locs, sim_bps, tau, alpha, m
 rule all:
     input:
         [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.pred" for s in alpha for t in tau],
+        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.pred" for s in alpha for t in tau],
         [f"data/diploshic/fvec_vcf/v5--Teo--random2_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.fvec" for s in alpha for t in tau]
         #[f"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.weights.hdf5" for s in alpha for t in tau]
         #[f"data/diploshic/discoal/SOFT--v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}--window_1.out.gz" for s in alpha for t in tau]
@@ -163,5 +164,5 @@ rule emp_predict:
 
 
 
-#include: "../rules/demography.smk"
+include: "../rules/demography.smk"
 
