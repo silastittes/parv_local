@@ -47,6 +47,7 @@ parser.add_argument('-b', '--bps', type=int, required = True,
 args = parser.parse_args()
 
 mu = 3e-8
+#mu = 1e-7 #!!!
 c = 1.6e-8
 
 
@@ -65,10 +66,11 @@ sfs_all = sfs_array.sum(axis=0)
 print(sfs_all)
 
 
-t = np.logspace(np.log10(1), np.log10(1000000), 100)
+t = np.logspace(np.log10(1), np.log10(200000), 50)
+
 ksfs = mushi.kSFS(np.array(sfs_all[1:-1]))
 ksfs.infer_history(t, mu0 = mu*sum(sfs_all), infer_mu=False, folded = False,
-                   alpha_tv=5e1, alpha_spline=5e1, alpha_ridge = 1e-3,
+                   alpha_tv=1e4, alpha_spline=1e4, alpha_ridge = 1e-1,
                    tol=1e-12, verbose=True, max_iter = 5000)
 
 ksfs.plot_total()
