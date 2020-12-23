@@ -56,12 +56,19 @@ def build_discoal(discoal_path, discoal_file, sim_type, sweep_locs, sim_bps, tau
                 print(f"{hard_string}", file = s)
 
 
-
+#data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.pred
 rule all:
     input:
-        [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.pred" for s in alpha for t in tau],
-        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.pred" for s in alpha for t in tau],
-        [f"data/diploshic/fvec_vcf/v5--Teo--random2_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau]
+        [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--Teo--random1_Palmar_Chico--chr1--0--308452471.pred" for s in alpha for t in tau],
+        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--random1_Palmar_Chico--chr1--0--308452471.pred" for s in alpha for t in tau],
+        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--random1_Palmar_Chico--chr2--0--243675191.pred" for s in alpha for t in tau],
+        [f"data/diploshic/vcf_pred/v5--LR--Amatlan_de_Canas--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--Amatlan_de_Canas--chr1--0--308452471.pred" for s in alpha for t in tau]
+
+        #[f"data/diploshic/fvec_vcf/v5--Teo--random1_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
+        #[f"data/diploshic/fvec_vcf/v5--Teo--random2_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
+        #[f"data/diploshic/fvec_vcf/v5--LR--random1_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
+        #[f"data/diploshic/fvec_vcf/v5--LR--Amatlan_de_Canas--chr1--0--308452471.fvec" for s in alpha for t in tau]
+
         #[f"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.weights.hdf5" for s in alpha for t in tau]
         #[f"data/diploshic/discoal/SOFT--v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}--window_1.out.gz" for s in alpha for t in tau]
         #"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s0_0.01--tau0_0.05.weights.hdf5"
@@ -169,13 +176,15 @@ rule fvec_vcf:
     shell:
         "python src/diploSHIC/diploSHIC.py fvecVcf diploid {input.vcf} {params.chrom} {params.end} {output} --winSize {sim_bps}  --maskFileName {input.mask}"
 
+#in order to train, mask file from a specific chromosome is needed. In order NOT to train a separate net for every chromosome, tell snakemake which net to use on which chromosome.
+#name output directory according the net, file according to which chromosome the *empirical* data came frome.
 rule emp_predict:
     input:
         wt = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.weights.hdf5",
         json = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.json",
-        fvec = "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.fvec"
+        fvec = "data/diploshic/fvec_vcf/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}.fvec"
     output:
-        "data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.pred"
+        "data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}.pred"
     shell:
         "python src/diploSHIC/diploSHIC.py predict {input.json} {input.wt} {input.fvec} {output}"
 
