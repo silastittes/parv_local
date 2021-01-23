@@ -51,16 +51,14 @@ neutrals = [f"data/rdmc/freq/v5--NEUTRAL--{chrom}--{start}--{end}_freq.txt.gz" f
 print('\n'.join(neutrals))
 
 
-
-
 ###########
 ## RULES ##
 ###########
 
 rule all:
     input:
-        list(sweep_df['out_file'])[0:2],
-        neutrals
+        list(sweep_df['out_file'])[0:2]
+        #neutrals
 
 rule get_sweep:
     input:

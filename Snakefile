@@ -110,6 +110,35 @@ raisd_merged = expand("data/raisd/v5--{ssp}--{pop}.corrected_block_outliers_merg
 print('\n'.join(raisd_outliers))
 
 
+
+##########
+## RDMC ##
+##########
+
+FREQ_POPS = [
+    "v5--LR--Amatlan_de_Canas",
+    "v5--LR--Crucero_Lagunitas",
+    "v5--LR--Los_Guajes",
+    "v5--LR--random1_Palmar_Chico",
+    "v5--LR--random2_Palmar_Chico",
+    "v5--LR--San_Lorenzo",
+    "v5--Teo--Amatlan_de_Canas",
+    "v5--Teo--Crucero_Lagunitas",
+    "v5--Teo--El_Rodeo",
+    "v5--Teo--Los_Guajes",
+    "v5--Teo--random1_Palmar_Chico",
+    "v5--Teo--random2_Palmar_Chico",
+    "v5--Teo--San_Lorenzo"
+]
+
+
+pop_freqs = [f"data/rdmc/freq/{popz}--{chrom}--{start}--{end}_freq.bed.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND))) for popz in FREQ_POPS]
+
+allpop_freqs = [f"data/rdmc/freq/v5--allpops--{chrom}--{start}--{end}_freq.txt.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND)))]
+
+print('\n'.join(allpop_freqs))
+
+
 ##########
 ## DADI ##
 ##########
@@ -208,10 +237,12 @@ rule all:
         mk_files,
         relate_files,
         ibd_files,
-        mushi_out
-        #raisd_corrected,
-        #raisd_outliers,
-        #raisd_merged,
+        mushi_out,
+        raisd_corrected,
+        raisd_outliers,
+        raisd_merged,
+        pop_freqs,
+        allpop_freqs
         #dadi_files,
         #stats_files,
         #stats_full,
@@ -231,3 +262,4 @@ include: "rules/ngsRelate.smk"
 include: "rules/treemix.smk"
 include: "rules/angsd_vcf.smk"
 include: "rules/demography.smk"
+include: "rules/rdmc.smk"
