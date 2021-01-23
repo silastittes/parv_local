@@ -1,39 +1,58 @@
+import pickle
+
 mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
 mop_files = expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 chroms = list(set(mCHROM))
 
 #configuration 
 mu = 3e-8
+c = 1.6e-8 
 diploshic="src/diploSHIC/diploSHIC.py"
-discoal="src/discoal/"
-sim_bps = 55000
+discoal="src/discoal/discoal"
+sim_bps = 110000
+n_sims = 2000
 site_idx = list(range(11))
 sweep_locs = [0.045454545454545456, 0.13636363636363635, 0.22727272727272727, 0.3181818181818182, 0.4090909090909091, \
     0.5, 0.5909090909090909, 0.6818181818181818, 0.7727272727272727, 0.8636363636363636, 0.9545454545454546]
 
-#tau = [[1e4, 5e4], [0.0, 1e4]]
-#alpha = [[5e-5, 1e-4], [1e-4, 5e-4], [5e-4, 1e-3]]
-
+#not really tau, just generations
 tau = [[1e4, 5e4], [0.0, 1e4]]
+#not really alpha, just s
 alpha = [[5e-5, 1e-4], [1e-4, 5e-4], [5e-4, 1e-3]]
 
 
-def build_discoal(discoal_path, discoal_file, sim_type, sweep_locs, sim_bps, tau, alpha, mu, out_path, out_prefix):
-    with open(discoal_file) as d:
-        discoal_string = discoal_path + d.readline().strip()
+##testing!!!!!!!!
+#not really tau, just generations
+tau = [[0.0, 1e4]]
+#not really alpha, just s
+alpha = [[5e-4, 1e-3]]
 
+
+
+#theta_0 = 4*N_0*mu*args.discoal_nsites
+#rho = 4*N_0*c*args.discoal_nsites
+#with open(f"{args.prefix}_discoal.txt", "w") as discoal_file:
+#    print(f"discoal {ns} {args.discoal_reps} {args.discoal_nsites} -Pt {0.8*theta_0} {1.2*theta_0} -Pre {rho} {3*rho} {en_string}", file = discoal_file)
+
+def build_discoal(discoal_path, discoal_file, sim_type, sweep_locs, sim_bps, tau, alpha, mu, out_path, out_prefix):
+    with open(discoal_file, "rb") as d:
+        discoal_dict = pickle.load(d)
+        
     #grab theta and N0
-    theta_low, theta_high = discoal_string.split("-Pt ")[1].split(" ")[0:2]
-    theta = (float(theta_low) + float(theta_high))/2
-    N0 = theta / (4*mu*sim_bps)
+    N_0 = discoal_dict['N_0']
+    ns = discoal_dict['ns']
+    en_string = discoal_dict['en_string']
+    theta_0 = 4*N_0*mu*sim_bps
+    rho = 4*N_0*c*sim_bps
+    discoal_string = f"{discoal} {ns} {n_sims} {sim_bps} -Pt {0.8*theta_0} {1.2*theta_0} -Pre {rho} {3*rho} {en_string}"
     
     alpha_f = alpha.split("_")
     tau_f = tau.split("_")
     
-    s1 = 2*N0*float(alpha_f[0])
-    s2 = 2*N0*float(alpha_f[1])
-    t1 = float(tau_f[0])/(4*N0)
-    t2 = float(tau_f[1])/(4*N0)
+    s1 = 2*N_0*float(alpha_f[0])
+    s2 = 2*N_0*float(alpha_f[1])
+    t1 = float(tau_f[0])/(4*N_0)
+    t2 = float(tau_f[1])/(4*N_0)
     tmid = (t1 + t2)/2
   
     #write commands
@@ -45,7 +64,7 @@ def build_discoal(discoal_path, discoal_file, sim_type, sweep_locs, sim_bps, tau
 
         if sim_type == "NEUTRAL":
             with open(file_name, "w") as s:
-                print(f"{soft_string}", file = s)
+                print(f"{neutral_string}", file = s)
 
         if sim_type == "SOFT":
             with open(file_name, "w") as s:
@@ -59,39 +78,28 @@ def build_discoal(discoal_path, discoal_file, sim_type, sweep_locs, sim_bps, tau
 #data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.pred
 rule all:
     input:
-        [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--Teo--random1_Palmar_Chico--chr1--0--308452471.pred" for s in alpha for t in tau],
-        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--random1_Palmar_Chico--chr1--0--308452471.pred" for s in alpha for t in tau],
-        [f"data/diploshic/vcf_pred/v5--LR--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--random1_Palmar_Chico--chr2--0--243675191.pred" for s in alpha for t in tau],
-        [f"data/diploshic/vcf_pred/v5--LR--Amatlan_de_Canas--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--LR--Amatlan_de_Canas--chr1--0--308452471.pred" for s in alpha for t in tau]
+        [f"data/diploshic/vcf_pred/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--{0}--{1000000}.pred" for s in alpha for t in tau]
 
-        #[f"data/diploshic/fvec_vcf/v5--Teo--random1_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
-        #[f"data/diploshic/fvec_vcf/v5--Teo--random2_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
-        #[f"data/diploshic/fvec_vcf/v5--LR--random1_Palmar_Chico--chr1--0--308452471.fvec" for s in alpha for t in tau],
-        #[f"data/diploshic/fvec_vcf/v5--LR--Amatlan_de_Canas--chr1--0--308452471.fvec" for s in alpha for t in tau]
-
-        #[f"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}.weights.hdf5" for s in alpha for t in tau]
-        #[f"data/diploshic/discoal/SOFT--v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s{s[0]}_{s[1]}--tau{t[0]}_{t[1]}--window_1.out.gz" for s in alpha for t in tau]
-        #"data/diploshic/cnns/v5--Teo--random1_Palmar_Chico--chr1--0--308452471--s0_0.01--tau0_0.05.weights.hdf5"
 
 rule build_discoal:
     input:
         command = "data/mushi/{ref}--{ssp}--{pop}--mushi_discoal.txt"
     output:
-        expand("data/diploshic/discoal/{{type}}--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.sh", window = site_idx)
+        expand("data/diploshic/discoal/{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}/{{type}}--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.sh", window = site_idx)
     params:
         sim_type = "{type}",
         tau = "{tau}",
         alpha = "{s}",
         prefix = "{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
-        path = "data/diploshic/discoal/"
+        path = "data/diploshic/discoal/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/"
     run:
         build_discoal(discoal, input.command, params.sim_type, sweep_locs, sim_bps, params.tau, params.alpha, mu, params.path, params.prefix)
 
 rule discoal:
     input:
-        "data/diploshic/discoal/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.sh"
+        "data/diploshic/discoal/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.sh"
     output:
-        "data/diploshic/discoal/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.out.gz"
+        "data/diploshic/discoal/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.out.gz"
     run:
         shell("bash {input} | gzip > {output}")
     
@@ -101,8 +109,8 @@ rule mask:
         gbed = "data/refs/{ref}/{ref}.gbed",
         bed = "data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed"
     output:
-        mask_chrom = temp("data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa"),
-        fasta_chrom = temp("data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--raw.fa")
+        mask_chrom = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa",
+        fasta_chrom = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--raw.fa"
     params:
         chrom = "{chrom}"
     shell:
@@ -114,23 +122,23 @@ rule mask:
 rule fvecsim:
     input:
         mask = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa",
-        discoal = "data/diploshic/discoal/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.out.gz"
+        discoal = "data/diploshic/discoal/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.out.gz"
     output:
-        "data/diploshic/fvec/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.fvec"
+        "data/diploshic/fvec/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_{window}.fvec"
     params:
+        stat_dir = "data/diploshic/fvec/{type}--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}_stats",
         chrom = "{chrom}"
     shell:
         """
-        python {diploshic} fvecSim diploid {input.discoal} {output} --totalPhysLen {sim_bps} --maskFileName {input.mask} --chrArmsForMasking {params.chrom}
+        python {diploshic} fvecSim diploid {input.discoal} {output} --outStatsDir {params.stat_dir} --totalPhysLen {sim_bps} --maskFileName {input.mask} --chrArmsForMasking {params.chrom}
         """
-
 
 rule trainingsets:
     input:
-        neut = expand("data/diploshic/fvec/NEUTRAL--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
-        neut_sim = "data/diploshic/fvec/NEUTRAL--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_0.fvec",
-        soft = expand("data/diploshic/fvec/SOFT--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
-        hard = expand("data/diploshic/fvec/HARD--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
+        neut = expand("data/diploshic/fvec/{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}/NEUTRAL--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
+        neut_sim = "data/diploshic/fvec/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/NEUTRAL--{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}--window_0.fvec",
+        soft = expand("data/diploshic/fvec/{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}/SOFT--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
+        hard = expand("data/diploshic/fvec/{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}/HARD--{{ref}}--{{ssp}}--{{pop}}--{{chrom}}--{{start}}--{{end}}--s{{s}}--tau{{tau}}--window_{window}.fvec", zip, window = site_idx),
     output:
         neut = "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/neut.fvec",
         soft = "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/soft.fvec",
@@ -138,7 +146,7 @@ rule trainingsets:
         linkedHard = "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/linkedHard.fvec",
         linkedSoft = "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/linkedSoft.fvec"
     params:
-        simdir = "data/diploshic/fvec/",
+        simdir = "data/diploshic/fvec/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/",
         outdir =  "data/diploshic/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/"
     shell:
         """
@@ -169,12 +177,18 @@ rule fvec_vcf:
         vcf = "data/angsd_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.gz",
         mask = "data/diploshic/mask/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--mask.fa"
     output:
-        "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.fvec"
+        fvec = "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--{vstart}--{vend}.fvec",
+        statfile = "data/diploshic/fvec_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--{vstart}--{vend}_stats.txt"
     params:
         chrom = "{chrom}",
-        end = "{end}"
+        end = "{end}",
+        vstart = "{vstart}",
+        vend = "{vend}"
     shell:
-        "python src/diploSHIC/diploSHIC.py fvecVcf diploid {input.vcf} {params.chrom} {params.end} {output} --winSize {sim_bps}  --maskFileName {input.mask}"
+        """
+        python src/diploSHIC/diploSHIC.py fvecVcf diploid {input.vcf} {params.chrom} {params.end} {output.fvec} \
+            --winSize {sim_bps} --maskFileName {input.mask} --segmentStart {params.vstart} --segmentEnd {params.vend} --statFileName {output.statfile}
+        """
 
 #in order to train, mask file from a specific chromosome is needed. In order NOT to train a separate net for every chromosome, tell snakemake which net to use on which chromosome.
 #name output directory according the net, file according to which chromosome the *empirical* data came frome.
@@ -182,13 +196,11 @@ rule emp_predict:
     input:
         wt = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.weights.hdf5",
         json = "data/diploshic/cnns/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}.json",
-        fvec = "data/diploshic/fvec_vcf/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}.fvec"
+        fvec = "data/diploshic/fvec_vcf/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}--{vstart}--{vend}.fvec"
     output:
-        "data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}.pred"
+        "data/diploshic/vcf_pred/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}--s{s}--tau{tau}/{eref}--{essp}--{epop}--{echrom}--{estart}--{eend}--{vstart}--{vend}.pred"
     shell:
         "python src/diploSHIC/diploSHIC.py predict {input.json} {input.wt} {input.fvec} {output}"
-
-
 
 include: "../rules/demography.smk"
 

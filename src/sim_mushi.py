@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import os
 from itertools import tee
-
+import pickle
 
 parser = argparse.ArgumentParser(
     prog = "Simulate demography using mushi, generate data using msprime to compare simulated and observed summary statistics.",    
@@ -25,11 +25,6 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-i', '--ID', type=str, required = True,
             help='population ID to include in output files where appropriate.')
 
-parser.add_argument('-r', '--discoal_reps', type=int, required = True,
-            help='Numer of replicates to print in discoal command string')
-
-parser.add_argument('-d', '--discoal_nsites', type=int, required = True,
-            help='Number of sites to print in discoal command string.')
 
 parser.add_argument('-s', '--sfs', type=str, nargs='+', required = True,
             help='One or more input files containing the unfolded sfs on the first line, white space delimited.')
@@ -66,7 +61,7 @@ sfs_all = sfs_array.sum(axis=0)
 print(sfs_all)
 
 
-t = np.logspace(np.log10(1), np.log10(200000), 50)
+t = np.logspace(np.log10(1), np.log10(100000), 25)
 
 ksfs = mushi.kSFS(np.array(sfs_all[1:-1]))
 ksfs.infer_history(t, mu0 = mu*sum(sfs_all), infer_mu=False, folded = False,
@@ -122,18 +117,19 @@ with open(f"{args.prefix}_stats.txt", "w") as stat_file:
 with open(f"{args.prefix}_ms.txt", "w") as ms_file:
     tskit.write_ms(ts_mushi_copy, output = ms_file)
 
-
 en_string = ""
 for t, N in zip(msp_T, msp_N):
     t_scaled = t / (4*N_0)
     N_scaled = N / N_0
     en_string += f"-en {t_scaled:0.7f} 0 {N_scaled:0.7f} "
 
+discoal_dict = {'N_0': N_0, 'ns': ns,'en_string': en_string}
+with open(f"{args.prefix}_discoal.txt", "wb") as discoal_file:
+    pickle.dump(discoal_dict, discoal_file)
 
-theta_0 = 4*N_0*mu*args.discoal_nsites
-rho = 4*N_0*c*args.discoal_nsites
-
-with open(f"{args.prefix}_discoal.txt", "w") as discoal_file:
-    print(f"discoal {ns} {args.discoal_reps} {args.discoal_nsites} -Pt {0.8*theta_0} {1.2*theta_0} -Pre {rho} {3*rho} {en_string}", file = discoal_file)
+#theta_0 = 4*N_0*mu*args.discoal_nsites
+#rho = 4*N_0*c*args.discoal_nsites
+#with open(f"{args.prefix}_discoal.txt", "w") as discoal_file:
+#    print(f"discoal {ns} {args.discoal_reps} {args.discoal_nsites} -Pt {0.8*theta_0} {1.2*theta_0} -Pre {rho} {3*rho} {en_string}", file = discoal_file)
 
 
