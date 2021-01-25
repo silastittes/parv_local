@@ -120,14 +120,12 @@ FREQ_POPS = [
     "v5--LR--Crucero_Lagunitas",
     "v5--LR--Los_Guajes",
     "v5--LR--random1_Palmar_Chico",
-    "v5--LR--random2_Palmar_Chico",
     "v5--LR--San_Lorenzo",
     "v5--Teo--Amatlan_de_Canas",
     "v5--Teo--Crucero_Lagunitas",
     "v5--Teo--El_Rodeo",
     "v5--Teo--Los_Guajes",
     "v5--Teo--random1_Palmar_Chico",
-    "v5--Teo--random2_Palmar_Chico",
     "v5--Teo--San_Lorenzo"
 ]
 

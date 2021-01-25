@@ -1,4 +1,3 @@
-
 rule make_freq:
     input:
         "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.mafs.gz"
@@ -19,5 +18,6 @@ rule merge_freq:
     shell:
         """
         bedtools unionbedg -i {input} -filler NA |\
-        awk '{{for(i=4;i<=NF;i++) t+=$i; t_mean = t/(NF-3); if(t_mean> 0.05 && t_mean<0.95) print $0; t=0}}' | gzip > {output}
+        awk '{{for(i=4;i<=NF;i++) t+=$i; t_mean = t/(NF-3); if(t_mean> 0.05 && t_mean<0.95) print $0; t=0}}' |\
+        grep -v NA | gzip > {output}
         """
