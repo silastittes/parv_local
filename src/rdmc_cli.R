@@ -12,9 +12,10 @@ parser <- ArgumentParser()
 # specify our desired options 
 # by default ArgumentParser will add an help option 
 parser$add_argument("-s", "--sweep_file", type="character", help="File that contains the allele frequencies for the sweep region.")
-parser$add_argument("-n", "--neutral_file", help="File that containes the allele frequencies for the neutral loci.")
+parser$add_argument("-n", "--neutral_file", help="File that contains the allele frequencies for the neutral loci.")
 parser$add_argument("-I", "--pop_ids", help="The indices for populations that experienced the sweep. Hyphen separated. ex. 1-2-5.")
 parser$add_argument("-g", "--gmap", help="Genetic map to get recombination rate. Must contained tab delimited and named columns: 'chr', 'cm', 'pos'. Chromosomes will be prefixed with 'chr'.")
+parser$add_argument("-o", "--out_file", help="Name of the outfile to write the fitted model data frame to.")
 #parser$add_argument("-", "--", help="")
 
 args <- parser$parse_args()
@@ -134,7 +135,7 @@ sv_cle <- mode_wrapper(param_list, mode = "standing")
 print("mig")
 mig_cle <- mode_wrapper(param_list, mode = "migration")
 
-
+#combine data, scale cle relative to neutral
 all_mods <-
   bind_rows(
     ind_cle,
@@ -144,6 +145,7 @@ all_mods <-
     mutate(sel_pop_ids = paste(FREQ_POPS[sel_vec+3], collapse = "; "),
           neut_cle = unique(neut_cle$cle)) 
 
+#write to file
 out_file <- args$out_file
 write_delim(x = all_mods, file = out_file, delim = "\t")
 
