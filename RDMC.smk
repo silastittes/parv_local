@@ -71,27 +71,14 @@ rule get_sweep:
         """
         zcat {input} |  awk -v chrom={params.chrom} -v start={params.start} -v end={params.end} '$1==chrom && $2 >= start && $3 <= end {{print $0}}' > {output}
         """
-
-rule neutral_bed:
+rule get_neutral:
     input:
-        gff = "data/refs/{ref}/{ref}.gff3.gz",
-        gbed = "data/refs/{ref}/{ref}.gbed"
+        ""
     output:
-        "data/rdmc/{ref}--neutral.bed"
+        ""
     shell:
-        """
-zcat {input.gff} |\
-  awk '$3 ~ /^gene$/ && $1 ~ /^chr/' |\
-  bedtools slop -i stdin  -b 100000 -g {input.gbed} |\
-  bedtools merge -i stdin |\
-  sort -V |\
-  bedtools complement -i stdin -g {input.gbed} |\
-  awk '$3-$2 > 1{{print $0 "\\t" $3-$2}}' |\
-  awk '{{for(i=0;i<=5000;i++){{r = int(rand()*($3-$2))+$2; print $1 "\\t" r "\\t" r+1}}}}' |\
-  uniq > {output}
-        """
-
-
+        ""
+    
 
 #"sweep_chr1--0--308452471_start995115_end1294915_pops3-4-5-6-8-9-10-11-12.txt"
 rule rdmc_cli:
