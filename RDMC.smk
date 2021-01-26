@@ -55,7 +55,7 @@ print('\n'.join(neutrals))
 
 rule all:
     input:
-        list(sweep_df['out_file'])[0:2]
+        list(sweep_df['out_file'])
         #neutrals
 
 rule get_sweep:
@@ -104,6 +104,8 @@ rule rdmc_cli:
         pops = "{pops}",
         start = "{sweep_start}",
         end = "{sweep_end}"
+    conda:
+        "r-environment.yml"
     shell:
         "cp {input} {output}"
 
