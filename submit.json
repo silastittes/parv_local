@@ -259,6 +259,15 @@
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    },
+    "rdmc_cli":
+    {
+        "cpus-per-task" : 1,
+        "mem" : "12G",
+        "time" : "12:00:00",
+        "p" : "low2",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     }
 }
 

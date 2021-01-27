@@ -1,0 +1,13 @@
+name: rdmc
+channels:
+  - conda-forge
+  - r
+  - silastittes
+
+dependencies:
+  - r
+  - r-argparse
+  - r-vroom
+  - r-rdmc
+  - r-tidyverse
+

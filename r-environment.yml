@@ -173,6 +173,7 @@ dependencies:
   - python-dateutil=2.8.1=py_0
   - python_abi=3.7=1_cp37m
   - pyzmq=20.0.0=py37h5a562af_1
+  - r-argparse=1.0.1
   - r-abind=1.4_5=r36h6115d3f_1003
   - r-askpass=1.1=r36hcdcec82_2
   - r-assertthat=0.2.1=r36h6115d3f_2

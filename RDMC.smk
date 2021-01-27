@@ -55,7 +55,8 @@ print('\n'.join(neutrals))
 
 rule all:
     input:
-        list(sweep_df['out_file'])
+        list(sweep_df['out_file']),
+        "data/rdmc/v5--neutral_freqs.txt"
         #neutrals
 
 rule get_sweep:
@@ -71,20 +72,23 @@ rule get_sweep:
         """
         zcat {input} |  awk -v chrom={params.chrom} -v start={params.start} -v end={params.end} '$1==chrom && $2 >= start && $3 <= end {{print $0}}' > {output}
         """
+
+
 rule get_neutral:
     input:
-        ""
+        expand("data/rdmc/freq/{{ref}}--allpops--{chrom}--{start}--{end}_freq.txt.gz", zip, chrom = CHROM, start=START, end=END)
     output:
-        ""
+        "data/rdmc/{ref}--neutral_freqs.txt"
     shell:
-        ""
+        "> {output}; for i in `echo {input}`; do zcat $i | shuf -n 10000 >> {output}; done"
     
 
 #"sweep_chr1--0--308452471_start995115_end1294915_pops3-4-5-6-8-9-10-11-12.txt"
 rule rdmc_cli:
     input:
-        #gmap = "ogut something something"
-        freq_file = "data/rdmc/sweep_freq/{ref}--sweep--{chrom}--{start}--{end}_start{sweep_start}_end{sweep_end}_pops{pops}.txt"
+        gmap = "data/map/ogut_{ref}.map.txt",
+        neutral_file = "data/rdmc/{ref}--neutral_freqs.txt",
+        sweep_file = "data/rdmc/sweep_freq/{ref}--sweep--{chrom}--{start}--{end}_start{sweep_start}_end{sweep_end}_pops{pops}.txt",
     output:
         "data/rdmc/fitted/{ref}--sweep_{chrom}--{start}--{end}_start{sweep_start}_end{sweep_end}_pops{pops}.txt"
     params:
@@ -92,8 +96,9 @@ rule rdmc_cli:
         start = "{sweep_start}",
         end = "{sweep_end}"
     conda:
-        "r-environment.yml"
+        "rdmc-environment.yml"
     shell:
-        "cp {input} {output}"
-
+        """
+        Rscript src/rdmc_cli.R --neutral_file {input.neutral_file} --sweep_file {input.sweep_file} --pop_ids {params.pops} --gmap {input.gmap} --out_file {output}
+        """
 

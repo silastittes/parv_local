@@ -1,9 +1,6 @@
 suppressPackageStartupMessages(library("argparse"))
 suppressPackageStartupMessages(library(rdmc))
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(ape))
-theme_set(cowplot::theme_cowplot(15))
-suppressPackageStartupMessages(library(patchwork))
 
 
 # create parser object
@@ -71,7 +68,8 @@ gen_map_all_chr <- vroom::vroom(gmap, delim = "\t") %>%
     cm_mb <- tibble(cm_mb = 1e6*(df2$cm - df1$cm)/(df2$pos - df1$pos))
     cm_bp <- tibble(rr = (df2$cm - df1$cm)/(df2$pos - df1$pos)/100)
     bind_cols(df2, cm_mb, cm_bp)
-  }) %>% 
+  }) %>%
+  ungroup() %>% 
   mutate(chr = paste0("chr", chr))
 
 get_rr <- function(genetic_df, sweep_chr, sweep_positions){
@@ -106,10 +104,10 @@ param_list <-
     n_sites = 20,
     sample_sizes = rep(10, nrow(neut_mat)),
     num_bins = 100,
-    sels = 10^seq(-4, 0, length.out = 20),
-    times = c(1e2, 1e4, 1e6),
+    sels = 10^seq(-4, -1, length.out = 15),
+    times = c(1e2, 1e3, 1e4, 1e5),
     gs = 10^seq(-3, -1, length.out = 3),
-    migs = 10^(seq(-4, -2, length.out = 2)),      
+    migs = 10^(seq(-3, -1, length.out = 2)),
     sources = sel_vec,
     locus_name = s_file,
     cholesky = TRUE
@@ -147,5 +145,5 @@ all_mods <-
 
 #write to file
 out_file <- args$out_file
-write_delim(x = all_mods, file = out_file, delim = "\t")
+write_delim(all_mods, out_file, delim = "\t")
 
