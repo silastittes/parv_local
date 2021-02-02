@@ -60,7 +60,7 @@ pi_full = [p.replace("WINDOW", w) for p in pi_full for w in ["1000", "100000", "
 #SWITCH
 #data/angsd_vcf/{ref}--{ssp}--{pop}.vcf
 #vcf_files = expand("data/angsd_vcf/{ref}--{ssp}--{pop}.vcf.gz", zip, ref = REF, pop = POP, ssp = SSP)
-#vcf_files = expand("data/angsd_vcf/v5--{ssp}--{pop}.vcf.gz", zip, ref = REF, pop = POP, ssp = SSP)
+vcf_files = expand("data/angsd_vcf/v5--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.mop.gz",  zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 
 
 ###############
@@ -234,6 +234,7 @@ rule all:
         pi_full,
         mk_files,
         relate_files,
+        vcf_files,
         ibd_files,
         mushi_out,
         raisd_corrected,
@@ -246,7 +247,6 @@ rule all:
         #stats_full,
 
         ##dadi_full,
-        ##vcf_files,
         ##mop_final,
 
 

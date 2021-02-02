@@ -33,13 +33,17 @@ rule vcf_mop:
         mop = "data/mop/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.bed",
         vcf = "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
     output:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_mop.vcf"
+        vcf="data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz",
+        tabix="data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz.tbi"
     shell:
-        "bedtools intersect -header -a {input.vcf} -b {input.mop} > {output}"
+        """
+        bedtools intersect -header -a {input.vcf} -b {input.mop} | bgzip > {output.vcf}
+        tabix -p vcf {output.vcf}
+        """
 
 rule IBDseq:
     input:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_mop.vcf"
+        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz"
     output:
         "data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2max{r2max}.hbd"
     params:

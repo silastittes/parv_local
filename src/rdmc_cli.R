@@ -36,29 +36,11 @@ FREQ_POPS = c(
 )
 
 
-neutral_file <- args$neutral_file
-neutral_freqs <- vroom::vroom(file = neutral_file,   
-    delim = "\t",
-    col_names = FREQ_POPS) %>%
-    sample_n(10000)
-
-
-s_file <- args$sweep_file
-str_split(s_file, "pops", simplify = FALSE)
-
-sel_vec <- str_split(args$pop_ids, "-", simplify = TRUE) %>% 
-           as_vector() %>% 
-           as.numeric()
-
-sweep_freqs <- vroom::vroom(file = s_file,   
-    delim = "\t",
-    col_names = FREQ_POPS) 
-
 gmap <- args$gmap
-gen_map_all_chr <- vroom::vroom(gmap, delim = "\t") %>% 
+gen_map_all_chr <- vroom::vroom(gmap, delim = "\t") %>%
   drop_na() %>%
   mutate(cm = cm + abs(min(cm))) %>%
-  group_by(chr) %>% 
+  group_by(chr) %>%
   group_modify(~{
     df1 <- slice(.x, -nrow(.x))
     df2 <- slice(.x, -1)
@@ -76,6 +58,76 @@ get_rr <- function(genetic_df, sweep_chr, sweep_positions){
   chr_df <- filter(genetic_df, chr == sweep_chr)
   median(approx(x = chr_df$pos, y = chr_df$rr, xout = sweep_positions)$y)
 }
+
+get_cm <- function(genetic_df, sweep_chr, sweep_start, sweep_end){
+  chr_df <- filter(genetic_df, chr == sweep_chr)
+  cm_start <- approx(x = chr_df$pos, y = chr_df$cm, xout = sweep_start)$y
+  cm_end <- approx(x = chr_df$pos, y = chr_df$cm, xout = sweep_end)$y
+  cm_end - cm_start
+}
+
+
+
+MIN_FREQ <- 1/20
+DEFAULT_SITES <- 1e4
+MAX_SITES <- 1e5
+MIN_SITES <- 1e3
+#snps per cM to get ~ constant density along different sized sweeps 
+SNP_K  <- 250000 
+
+
+neutral_file <- args$neutral_file
+neutral_freqs <- vroom::vroom(file = neutral_file,   
+    delim = "\t",
+    col_names = FREQ_POPS) %>%
+    mutate(varz = apply(select(., -c(chrom, start, end)), 1, max)) %>% 
+    filter(varz >= MIN_FREQ) %>%
+    sample_n(50000) %>% 
+    select(-varz) 
+
+
+s_file <- args$sweep_file
+
+#get sweep start and end positions from file name
+start <- str_split(s_file, "start", simplify = TRUE) %>% 
+    `[`(2) %>% 
+    str_split("_", simplify = TRUE) %>% 
+    `[`(1) %>% 
+    as.numeric(c)
+
+end <- str_split(s_file, "end", simplify = TRUE) %>% 
+    `[`(2) %>% 
+    str_split("_", simplify = TRUE) %>% 
+    `[`(1) %>% 
+    as.numeric(c)
+
+#get sweep size in cM. get how many sites to randomly sample along sweep
+sweep_cM <- get_cm(gen_map_all_chr, "chr1", start, end)
+n_snps <- round(SNP_K*sweep_cM)
+if(is.na(n_snps)) n_snps <- DEFAULT_SITES
+
+n_sites <- case_when(
+    is.na(n_snps) ~ NA_real_,
+    n_snps >= MIN_SITES && n_snps <= MAX_SITES ~ n_snps,
+    n_snps < MIN_SITES ~ MIN_SITES,
+    n_snps > MAX_SITES ~ MAX_SITES,
+)
+
+
+
+sel_vec <- str_split(args$pop_ids, "-", simplify = TRUE) %>% 
+           as_vector() %>% 
+           as.numeric()
+
+sweep_freqs <- vroom::vroom(file = s_file,   
+    delim = "\t",
+    col_names = FREQ_POPS)  %>% 
+    mutate(varz = apply(select(., -c(chrom, start, end)), 1, max)) %>% 
+    filter(varz >= MIN_FREQ) %>%
+    select(-varz) %>% 
+    sample_n(min(nrow(.), n_sites)) %>% 
+    arrange(start) 
+
 
 
 pos_vec <- select(sweep_freqs, end) %>% pull(end)
@@ -103,8 +155,8 @@ param_list <-
     positions = pos_vec,
     n_sites = 20,
     sample_sizes = rep(10, nrow(neut_mat)),
-    num_bins = 100,
-    sels = 10^seq(-4, -1, length.out = 15),
+    num_bins = 1000,
+    sels = 10^seq(-5, -1, length.out = 15),
     times = c(1e2, 1e3, 1e4, 1e5),
     gs = 10^seq(-3, -1, length.out = 3),
     migs = 10^(seq(-3, -1, length.out = 2)),

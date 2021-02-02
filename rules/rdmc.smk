@@ -8,7 +8,17 @@ rule make_freq:
         zcat {input} | awk 'NR > 1 {{print $1 "\\t" $2-1 "\\t" $2 "\\t" $7}}' | gzip > {output}
         """
 
-#FILTERED FOR MEAN ALLELE FREQUENCY BETWEEN 0.05 AND 0.95, WHICH IS A FAST AND HOPEFULLY A GOOD PROXY FOR VARIANCE
+#rule make_freq:
+#    input:
+#        "data/angsd_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.mop.gz"
+#    output:
+#        "data/rdmc/freq/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}_freq.bed.gz"
+#    shell:
+#        """
+#        zcat {input} | grep -v "#"  | sed 's/;/\t/g' | awk '{{print $1 "\\t" $2-1 "\\t" $2 "\\t" $11}}'  | sed 's/AF=//g' | gzip > {output}
+ #       """
+
+#FILTERED FOR loci with zero variance
 rule merge_freq:
     input:
         #expand("data/rdmc/freq/{{ref}}--{pops}--{{chrom}}--{{start}}--{{end}}_freq.bed.gz", pops = FREQ_POPS)
@@ -18,6 +28,8 @@ rule merge_freq:
     shell:
         """
         bedtools unionbedg -i {input} -filler NA |\
-        awk '{{for(i=4;i<=NF;i++) t+=$i; t_mean = t/(NF-3); if(t_mean> 0.05 && t_mean<0.95) print $0; t=0}}' |\
+        awk '{{for(i=4;i<=NF;i++) t+=$i; if(t > 0 && t < 1) print $0; t=0}}' |\
         grep -v NA | gzip > {output}
         """
+
+#awk '{{for(i=4;i<=NF;i++) t+=$i; t_mean = t/(NF-3); if(t_mean> 0.05 && t_mean<0.95) print $0; t=0}}' |\

@@ -1,6 +1,6 @@
 rule raisd:
     input:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_mop.vcf"
+        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz"
     output:
         info = "data/raisd/RAiSD_Info.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.txt",
         report = "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.txt"

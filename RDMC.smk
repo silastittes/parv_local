@@ -44,9 +44,6 @@ out_file = [f"data/rdmc/fitted/v5--sweep_{chrom_dict[row['chrom']]}_start{str(ro
 sweep_df['out_file'] = out_file
 sweep_df = sweep_df[sweep_df['sweep_idx'] != "NA"].reset_index() 
 
-neutrals = [f"data/rdmc/freq/v5--NEUTRAL--{chrom}--{start}--{end}_freq.txt.gz" for chrom, start, end in list(set(zip(CHROM, START, END)))]
-
-print('\n'.join(neutrals))
 
 
 ###########
@@ -80,9 +77,8 @@ rule get_neutral:
     output:
         "data/rdmc/{ref}--neutral_freqs.txt"
     shell:
-        "> {output}; for i in `echo {input}`; do zcat $i | shuf -n 10000 >> {output}; done"
+        "> {output}; for i in `echo {input}`; do zcat $i | shuf -n 100000 >> {output}; done"
     
-
 #"sweep_chr1--0--308452471_start995115_end1294915_pops3-4-5-6-8-9-10-11-12.txt"
 rule rdmc_cli:
     input:
@@ -99,6 +95,7 @@ rule rdmc_cli:
         "rdmc-environment.yml"
     shell:
         """
-        Rscript src/rdmc_cli.R --neutral_file {input.neutral_file} --sweep_file {input.sweep_file} --pop_ids {params.pops} --gmap {input.gmap} --out_file {output}
+        echo "testing" > {output}
+        #Rscript src/rdmc_cli.R --neutral_file {input.neutral_file} --sweep_file {input.sweep_file} --pop_ids {params.pops} --gmap {input.gmap} --out_file {output}
         """
 
