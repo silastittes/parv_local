@@ -52,7 +52,7 @@ sweep_df = sweep_df[sweep_df['sweep_idx'] != "NA"].reset_index()
 
 rule all:
     input:
-        list(sweep_df['out_file']),
+        list(sweep_df['out_file'])[1:5],
         "data/rdmc/v5--neutral_freqs.txt"
         #neutrals
 
@@ -95,7 +95,7 @@ rule rdmc_cli:
         "rdmc-environment.yml"
     shell:
         """
-        echo "testing" > {output}
-        #Rscript src/rdmc_cli.R --neutral_file {input.neutral_file} --sweep_file {input.sweep_file} --pop_ids {params.pops} --gmap {input.gmap} --out_file {output}
+        #echo "testing" > {output}
+        Rscript src/rdmc_cli.R --neutral_file {input.neutral_file} --sweep_file {input.sweep_file} --pop_ids {params.pops} --gmap {input.gmap} --out_file {output}
         """
 

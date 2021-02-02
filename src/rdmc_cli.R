@@ -126,9 +126,9 @@ sweep_freqs <- vroom::vroom(file = s_file,
     filter(varz >= MIN_FREQ) %>%
     select(-varz) %>% 
     sample_n(min(nrow(.), n_sites)) %>% 
-    arrange(start) 
+    arrange(start)
 
-
+final_snp_count = nrow(sweep_freqs) 
 
 pos_vec <- select(sweep_freqs, end) %>% pull(end)
 
@@ -192,8 +192,16 @@ all_mods <-
     mig_cle,
     sv_cle
   ) %>% 
-    mutate(sel_pop_ids = paste(FREQ_POPS[sel_vec+3], collapse = "; "),
-          neut_cle = unique(neut_cle$cle)) 
+    mutate(
+        sel_pop_ids = paste(FREQ_POPS[sel_vec+3], collapse = "; "),
+        neut_cle = unique(neut_cle$cle),
+        n_snps = final_snp_count,
+        sweepsize_cM = sweep_cM,
+        sweep_rr = rr,
+        sweep_start_bp = start,
+        sweep_end_bp = end,
+        sweep_size_bp = end - start 
+    )
 
 #write to file
 out_file <- args$out_file
