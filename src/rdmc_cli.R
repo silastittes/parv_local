@@ -119,89 +119,98 @@ sel_vec <- str_split(args$pop_ids, "-", simplify = TRUE) %>%
            as_vector() %>% 
            as.numeric()
 
-sweep_freqs <- vroom::vroom(file = s_file,   
+sweep_file <- vroom::vroom(file = s_file,   
     delim = "\t",
-    col_names = FREQ_POPS)  %>% 
-    mutate(varz = apply(select(., -c(chrom, start, end)), 1, max)) %>% 
-    filter(varz >= MIN_FREQ) %>%
-    select(-varz) %>% 
-    sample_n(min(nrow(.), n_sites)) %>% 
-    arrange(start)
+    col_names = FREQ_POPS) 
 
-final_snp_count = nrow(sweep_freqs) 
+if(nrow(sweep_file) > 0){
 
-pos_vec <- select(sweep_freqs, end) %>% pull(end)
+    sweep_freqs <-
+    sweep_file %>% 
+        mutate(varz = apply(select(., -c(chrom, start, end)), 1, max)) %>% 
+        filter(varz >= MIN_FREQ) %>%
+        select(-varz) %>% 
+        sample_n(min(nrow(.), n_sites)) %>% 
+        arrange(start)
 
-sweep_mat <- sweep_freqs %>% 
-    select(-c(chrom, start, end)) %>% 
-    t()
+    final_snp_count = nrow(sweep_freqs) 
 
-neut_mat <- 
-    neutral_freqs %>% 
-    select(-c(chrom, start, end)) %>% 
-    t()
+    pos_vec <- select(sweep_freqs, end) %>% pull(end)
+
+    sweep_mat <- sweep_freqs %>% 
+        select(-c(chrom, start, end)) %>% 
+        t()
+
+    neut_mat <- 
+        neutral_freqs %>% 
+        select(-c(chrom, start, end)) %>% 
+        t()
 
 
-sweep_chr <- sweep_freqs$chrom[1]
-rr <- get_rr(gen_map_all_chr, sweep_chr, sweep_freqs$end)
+    sweep_chr <- sweep_freqs$chrom[1]
+    rr <- get_rr(gen_map_all_chr, sweep_chr, sweep_freqs$end)
 
-param_list <-
-  parameter_barge(
-    Ne =  50000,
-    rec = rr,
-    neutral_freqs = neut_mat,
-    selected_freqs = sweep_mat,
-    selected_pops = sel_vec,
-    positions = pos_vec,
-    n_sites = 20,
-    sample_sizes = rep(10, nrow(neut_mat)),
-    num_bins = 1000,
-    sels = 10^seq(-5, -1, length.out = 15),
-    times = c(1e2, 1e3, 1e4, 1e5),
-    gs = 10^seq(-3, -1, length.out = 3),
-    migs = 10^(seq(-3, -1, length.out = 2)),
-    sources = sel_vec,
-    locus_name = s_file,
-    cholesky = TRUE
-  )
+    param_list <-
+      parameter_barge(
+        Ne =  50000,
+        rec = rr,
+        neutral_freqs = neut_mat,
+        selected_freqs = sweep_mat,
+        selected_pops = sel_vec,
+        positions = pos_vec,
+        n_sites = 20,
+        sample_sizes = rep(10, nrow(neut_mat)),
+        num_bins = 1000,
+        sels = 10^seq(-5, -1, length.out = 15),
+        times = c(1e2, 1e3, 1e4, 1e5),
+        gs = 10^seq(-3, -1, length.out = 3),
+        migs = 10^(seq(-3, -1, length.out = 2)),
+        sources = sel_vec,
+        locus_name = s_file,
+        cholesky = TRUE
+      )
 
-mode_wrapper <- function(barge, mode) {
-       cle_out <- try(mode_cle(barge, mode))
-       if(class(cle_out)[1] == 'try-error'){
-           barge$cholesky  <- FALSE
-           cle_out <- suppressWarnings(mode_cle(barge, mode))
-           barge$cholesky  <- TRUE
-       }
-    return(cle_out)
+    mode_wrapper <- function(barge, mode) {
+           cle_out <- try(mode_cle(barge, mode))
+           if(class(cle_out)[1] == 'try-error'){
+               barge$cholesky  <- FALSE
+               cle_out <- suppressWarnings(mode_cle(barge, mode))
+               barge$cholesky  <- TRUE
+           }
+        return(cle_out)
+    }
+
+    #fit composite likelihood models
+    print("neutral")
+    neut_cle <- mode_wrapper(param_list, mode = "neutral")
+    print("ind")
+    ind_cle <- mode_wrapper(param_list, mode = "independent")
+    print("standing")
+    sv_cle <- mode_wrapper(param_list, mode = "standing")
+    print("mig")
+    mig_cle <- mode_wrapper(param_list, mode = "migration")
+
+    #combine data, scale cle relative to neutral
+    all_mods <-
+      bind_rows(
+        ind_cle,
+        mig_cle,
+        sv_cle
+      ) %>% 
+        mutate(
+            sel_pop_ids = paste(FREQ_POPS[sel_vec+3], collapse = "; "),
+            neut_cle = unique(neut_cle$cle),
+            n_snps = final_snp_count,
+            sweepsize_cM = sweep_cM,
+            sweep_rr = rr,
+            sweep_start_bp = start,
+            sweep_end_bp = end,
+            sweep_size_bp = end - start 
+        )
+
+} else {
+    all_mods <- tibble()    
 }
-
-#fit composite likelihood models
-print("neutral")
-neut_cle <- mode_wrapper(param_list, mode = "neutral")
-print("ind")
-ind_cle <- mode_wrapper(param_list, mode = "independent")
-print("standing")
-sv_cle <- mode_wrapper(param_list, mode = "standing")
-print("mig")
-mig_cle <- mode_wrapper(param_list, mode = "migration")
-
-#combine data, scale cle relative to neutral
-all_mods <-
-  bind_rows(
-    ind_cle,
-    mig_cle,
-    sv_cle
-  ) %>% 
-    mutate(
-        sel_pop_ids = paste(FREQ_POPS[sel_vec+3], collapse = "; "),
-        neut_cle = unique(neut_cle$cle),
-        n_snps = final_snp_count,
-        sweepsize_cM = sweep_cM,
-        sweep_rr = rr,
-        sweep_start_bp = start,
-        sweep_end_bp = end,
-        sweep_size_bp = end - start 
-    )
 
 #write to file
 out_file <- args$out_file

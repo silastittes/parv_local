@@ -52,7 +52,7 @@ sweep_df = sweep_df[sweep_df['sweep_idx'] != "NA"].reset_index()
 
 rule all:
     input:
-        list(sweep_df['out_file'])[1:5],
+        list(sweep_df['out_file']),
         "data/rdmc/v5--neutral_freqs.txt"
         #neutrals
 
