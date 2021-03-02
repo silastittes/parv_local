@@ -1,0 +1,259 @@
+//Unfolded sfs -- no ancestral invariant category
+function(numeric)calc_usfs(integer nsize, object<Mutation> mut_vec, object<Genome> samples, [logical frequency = T]){
+
+    s_len = nsize + 1;
+    sfs = rep(0, s_len);
+    for(i in mut_vec){
+        n_count = sum(samples.containsMutations(i));
+        sfs[n_count] =  sfs[n_count] + 1;
+			
+        mut_lgl = sum(samples.containsMutations(i));
+        
+        /*
+        if(sum(mut_lgl) / length(mut_lgl) == 0){
+            sfs[0] = sfs[0] + 1;
+        }
+        */
+        
+        /*
+        if(sum(mut_lgl) / length(mut_lgl) == 1){
+        		sfs[0] = sfs[0] + 1;
+        }
+        */
+        
+
+    }
+
+    if(frequency){
+        sfs = sfs/sum(sfs);
+    }
+    return sfs[1:nsize];
+}
+
+
+function(string)summary_stats(integer nsize){
+
+	//sample individuals
+	allIndividuals = sim.subpopulations.genomes;
+	sampledIndividuals = sample(allIndividuals, nsize, replace = F);
+
+	//select mutations
+	m1_vec = sim.mutations[sim.mutations.mutationType == m1];
+	m2_vec = sim.mutations[sim.mutations.mutationType == m2];
+	m3_vec = sim.mutations[sim.mutations.mutationType == m3];
+	
+	//get frequencies
+	p1_vec = sim.mutationFrequencies(p1, mutations = m1_vec);
+	p2_vec = sim.mutationFrequencies(p1, mutations = m2_vec);
+	p3_vec = sim.mutationFrequencies(p1, mutations = m3_vec);
+	
+	//get polymorphisms
+	f1_vec = p1_vec[p1_vec < 1 & p1_vec > -1];
+	f2_vec = p2_vec[p2_vec < 1 & p2_vec > -1];
+	f3_vec = p3_vec[p3_vec < 1 & p3_vec > -1];	
+	
+	//count polymorphisms
+	m1_count = size(f1_vec);
+    m2_count = size(f2_vec);
+    m3_count = size(f3_vec);
+	
+	//get substitutions
+	s1_vec = p1_vec[p1_vec >= 1];
+	s2_vec = p2_vec[p2_vec >= 1];
+	s3_vec = p3_vec[p3_vec >= 1];
+	
+	//count substitutions
+	s1_count = size(s1_vec);
+    s2_count = size(s2_vec);
+    s3_count = size(s3_vec);
+
+
+	sfs1 = calc_usfs(nsize, m1_vec, sampledIndividuals, frequency = F);
+	sfs2 = calc_usfs(nsize, m2_vec, sampledIndividuals, frequency = F);
+	sfs3 = calc_usfs(nsize, m3_vec, sampledIndividuals, frequency = F);
+	sfs_s = sfs2 + sfs3;
+	
+    //prop of substitutions that are adaptive class
+	alpha = s3_count/(s1_count+s2_count+s3_count);
+
+	return paste(c(paste(sfs1, sep = ","), "\t", paste(sfs_s, sep = ",")), "\t", alpha);
+
+
+    /*
+    m1_count = size(m1_vec);
+    m2_count = size(m2_vec);
+    m3_count = size(m3_vec);
+	
+    s1_vec = sim.substitutions[sim.substitutions.mutationType == m1];
+    s2_vec = sim.substitutions[sim.substitutions.mutationType == m2];
+    s3_vec = sim.substitutions[sim.substitutions.mutationType == m3];
+    s1_count = size(s1_vec);
+    s2_count = size(s2_vec);
+    s3_count = size(s3_vec);
+   
+    alpha_raw = 1 - (s1_count/(s2_count+s3_count))*((m2_count + m3_count)/m1_count);
+
+	sfs1 = calc_usfs(nsize, m1_vec, sampledIndividuals, frequency = F);
+	cat(sfs1);
+	cat("\n");	
+	cat("\n");		
+	sfs2 = calc_usfs(nsize, m2_vec, sampledIndividuals, frequency = F);
+	cat(sfs2);
+	cat("\n");	
+	cat("\n");	
+	sfs3 = calc_usfs(nsize, m3_vec, sampledIndividuals, frequency = F);
+	cat(sfs3);
+	cat("\n");
+	cat("\n");
+	
+	//2:nsize-1
+	alpha_samp =  1 - (sum(sfs1[0:(nsize-2)])/(sum(sfs2[0:(nsize-2)]) + sum(sfs3[0:(nsize-2)])))*((sfs2[nsize-1] + sfs3[nsize-1])/sfs1[nsize-1]);
+	cat(paste(c("P:", sum(sfs1[0:(nsize-2)]), sum(sfs2[0:(nsize-2)]), sum(sfs3[0:(nsize-2)]), "D:", sfs1[nsize-1], sfs2[nsize-1]), sfs3[nsize-1],"\n", "sample alpha = :", alpha_samp, "\n"), sep = ",");
+	cat(paste(c("alpha_MK = ", alpha_raw, "\n")));
+	cat(paste(c("counts:", s1_count, s2_count, s3_count, "\n", "alpha = ", alpha, "\n")));
+		
+	return alpha;
+   */	
+	
+
+}
+
+
+
+initialize() {
+
+	//mu = 1e-6; c = 1e-6; loci = 5e7; neg_mean = -0.0003; neg_shape = 2.0; pos_mean = 0.001; pos_shape = 2.0; neg_prop = 0.8; pos_prop = 1-neg_prop; na = 100; nb = 50; n0 = 300; tb = 200; t0 = 500; sample_sizes = "12,20,100,110";
+	
+    defineConstant("sample_string", sample_sizes);
+
+    defineConstant("mut", mu);
+    defineConstant("rr", c);
+    defineConstant("n_loci", loci);
+
+    defineConstant("n_mean", neg_mean);
+    defineConstant("n_shape", neg_shape);
+    defineConstant("p_mean", pos_mean);
+    defineConstant("p_shape", pos_shape);
+    defineConstant("n_prop", neg_prop);
+    defineConstant("p_prop", pos_prop);
+
+    defineConstant("N_A", na);
+    defineConstant("N_B", nb);
+    defineConstant("N_0", n0);
+    defineConstant("T_B", tb);
+    defineConstant("T_0", t0);
+	
+	
+	
+    defineConstant("n_exons", 4);
+    defineConstant("exon_size", 200);
+    defineConstant("genes_per_20mb", 300/2e7);
+    defineConstant("intron_size", 300);
+	defineConstant("fold0_ratio", 3.5);
+	defineConstant("fold0bps", 200000);
+	defineConstant("fold4bps", 57000);
+	n_genes = asInteger(genes_per_20mb*loci);
+	
+    defineConstant("intergenic_size", 30000);
+    //defineConstant("intergenic_per_20mb", 30000/2e7);	
+    //intergenic_size = asInteger(intergenic_per_20mb*loci);
+
+    initializeMutationRate(mut);
+	initializeRecombinationRate(rr);
+			
+	
+	// m1, m2, and m3 mutation types: neutral, deleterious, adaptive
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeMutationType("m2", 0.5, "g", n_mean, n_shape);
+	initializeMutationType("m3", 0.5, "g", p_mean, p_shape);
+	m1.convertToSubstitution = F;	
+	m2.convertToSubstitution = F;
+	m3.convertToSubstitution = F;
+
+
+	
+	// g1 genomic element type: uses m1 for all mutations
+	initializeGenomicElementType("g1", c(m1, m2, m3), c(1, fold0_ratio*n_prop, fold0_ratio*p_prop));
+	
+	//buffer for genomic element ends
+    //bp_buff = asInteger((loci  - (intergenic_size + n_exons * exon_size + intron_size * (n_exons - 1)) * n_genes)/2);
+
+    base = 0;
+
+    while(base < n_loci){
+        for(j in 1:n_genes){
+            for(i in 1:(n_exons-1)){ //start and end on exon, so sim exon intron pairs
+                initializeGenomicElement(g1, base, base+exon_size);
+                base = base+exon_size+intron_size;
+            }
+            //make one more exon before the intergenic spacer
+            initializeGenomicElement(g1, base, base+exon_size);
+            base = base+exon_size+intergenic_size;
+        }
+    }
+}	
+
+
+// create a population of N_A individuals
+1 {
+	burnN = 10;
+	sim.addSubpop("p1", N_A);
+	sim.rescheduleScriptBlock(s1, start = burnN*N_A, end = burnN*N_A + T_B);
+	sim.rescheduleScriptBlock(s2, start = burnN*N_A + T_B, end = burnN*N_A + T_B + T_0);
+	sim.rescheduleScriptBlock(s3, start = burnN*N_A + T_B + T_0, end = burnN*N_A + T_B + T_0);
+
+}
+
+s1 late(){p1.setSubpopulationSize(N_B);}
+s2 late(){p1.setSubpopulationSize(N_0);}
+
+
+// output samples of 10 genomes periodically, all fixed mutations at end
+s3 late() { 
+
+	
+/*
+
+   defineConstant("mut", mu);
+   defineConstant("rr", c);
+   defineConstant("n_loci", loci);
+
+   defineConstant("n_mean", neg_mean);
+   defineConstant("n_shape", neg_mean);
+   defineConstant("p_mean", neg_mean);
+   defineConstant("p_shape", neg_mean);
+   defineConstant("n_prop", neg_prop);
+   defineConstant("p_prop", pos_prop);
+
+   defineConstant("N_A", na);
+   defineConstant("N_B", nb);
+   defineConstant("N_0", n0);
+   defineConstant("T_B", tb);
+   defineConstant("T_0", t0);
+
+*/
+
+ 
+	header = c("line", "n", "sfs_neutral", "sfs_selected", "alpha", "mu", "c", "loci", 
+				"neg_mean", "neg_shape", "pos_mean", "pos_shape", "neg_prop", 
+				"N_A", "N_B", "N_0", "T_B", "T_0");
+   
+   //writeFile("test.txt", paste(header, sep = "\t"), append = F);
+	cat(paste(header, sep = "\t"));
+	cat("\n"); 
+   
+	param_string = c(mut, rr, n_loci, 
+				     n_mean, n_shape, p_mean, p_shape, n_prop, 
+				     N_A, N_B, N_0, T_B, T_0);
+						  
+	//to pass the desired sample size via command line
+	samps = strsplit(asString(sample_string), "-");
+
+   
+	for(i in samps){
+		SFSs = summary_stats(asInteger(i));
+   	    line = paste(c("line", i, SFSs, param_string), sep = "\t");
+   	    cat(line);
+   	    cat("\n");
+	}
+}

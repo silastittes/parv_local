@@ -1,3 +1,6 @@
+.nextflow*
+dfe_and_alpha_slim/.nextflow*
+dfe_and_alpha_slim/work
 freqs_test.txt
 data/
 src/cds_fold/
