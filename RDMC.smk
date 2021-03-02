@@ -67,7 +67,7 @@ rule get_sweep:
         end = "{sweep_end}"
     shell:
         """
-        zcat {input} |  awk -v chrom={params.chrom} -v start={params.start} -v end={params.end} '$1==chrom && $2 >= start && $3 <= end {{print $0}}' > {output}
+        zcat {input} |  awk -v chrom={params.chrom} -v start={params.start} -v end={params.end} 'BEGIN{{buffer_size = ((end - start)*0.2)/2}} $1==chrom && $2 >= (start-buffer_size)  && $3 <= (end+buffer_size) {{print $0}}' > {output}
         """
 
 
