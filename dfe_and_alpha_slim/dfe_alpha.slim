@@ -76,7 +76,7 @@ function(string)summary_stats(integer nsize){
     //prop of substitutions that are adaptive class
 	alpha = s3_count/(s1_count+s2_count+s3_count);
 
-	return paste(c(paste(sfs1, sep = ","), "\t", paste(sfs_s, sep = ",")), "\t", alpha);
+	return paste(c(c(paste(sfs1, sep = ","), "\t", paste(sfs_s, sep = ",")), "\t", alpha));
 
 
     /*
