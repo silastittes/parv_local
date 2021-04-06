@@ -28,3 +28,6 @@ notebooks/bgs_bestfit.rds
 notebooks/bgs_fullfit.rds
 notebooks/bgs_bestfit_mu-7.rds
 notebooks/bgs_bestfit_mu-8.rds
+notebooks/RAiSD_Info.SUBSAMPLE
+notebooks/RAiSD_Report.SUBSAMPLE.chr6
+notebooks/RAiSD_Report.SUBSAMPLE.chr6.corrected

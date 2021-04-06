@@ -1,0 +1,17 @@
+
+VCFtools - 0.1.15
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf ../data/angsd_vcf/v5--Teo--Palmar_Chico--chr6--0--181357234.vcf.gz
+	--recode
+	--indv ind0
+	--indv ind5
+	--indv ind6
+	--indv ind7
+	--indv ind8
+	--indv ind9
+
+Using zlib version: 1.2.11
+Error: VCF version must be v4.0, v4.1 or v4.2:
+You are using version VCFv4.2(angsd version)

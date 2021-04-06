@@ -240,6 +240,7 @@ rule all:
         raisd_corrected,
         raisd_outliers,
         raisd_merged,
+        "data/raisd/v5--allpops--shared_outliers.txt",
         pop_freqs,
         allpop_freqs
         #dadi_files,

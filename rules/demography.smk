@@ -13,7 +13,8 @@ rule raisd:
         """
         mkdir -p data/raisd/
 
-        src/raisd-master/RAiSD -R -s -m 0.05 -n {params.pop} -I {input} -M 2 -y 2 -w 100 -f
+        #src/raisd-master/RAiSD -R -s -m 0.05 -n {params.pop} -I {input} -M 2 -y 2 -w 100 -f
+        src/raisd-master/RAiSD -R -s -m 0.05 -n {params.pop} -I {input} -w 100 -f
 
         mv {params.i1} {output.info}
         mv {params.r1} {output.report} 
