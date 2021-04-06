@@ -24,6 +24,7 @@ snakemakes/
 playground/
 src/diploSHIC/
 src/discoal/
+src/treemix/
 notebooks/bgs_bestfit.rds
 notebooks/bgs_fullfit.rds
 notebooks/bgs_bestfit_mu-7.rds
