@@ -172,6 +172,10 @@ ibd_files = expand("data/ibdseq/v5--{ssp}--{pop}--{chrom}--{start}--{end}_r2maxR
 ibd_files = [f.replace("R2", r) for f in ibd_files for r in ["0.7", "0.4"]]
 
 
+demography_ibd = expand("data/mushi/postsims/v5--{ssp}--{pop}_simREP.hbd", zip, ssp = SSP, pop = POP)
+demography_ibd = [d.replace("REP", str(r)) for d in demography_ibd for r in range(10)]
+
+
 #################
 ## OTHER FILES ##
 #################
@@ -236,6 +240,7 @@ rule all:
         relate_files,
         vcf_files,
         ibd_files,
+        demography_ibd,
         mushi_out,
         raisd_corrected,
         raisd_outliers,

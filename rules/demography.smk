@@ -61,6 +61,18 @@ rule mush:
         """
 
 
+
+rule demography_hbd:
+    input:
+        list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{pop}}--{chrom}--{start}--{end}.sfs", zip, chrom = mCHROM, start = mSTART, end = mEND)))
+    output:
+        expand("data/mushi/postsims/{{ref}}--{{ssp}}--{{pop}}_sim{rep}.hbd", rep = range(10))
+    params:
+        prefix = "data/mushi/postsims/{ref}--{ssp}--{pop}",
+    shell:
+        "python src/sim_hbd.py -s {input} -p {params.prefix}"
+        
+
 rule mushi_raisd:
     input:
         mspms = "data/mushi/{ref}--{ssp}--{pop}--mushi_ms.txt"
