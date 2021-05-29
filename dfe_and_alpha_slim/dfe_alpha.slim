@@ -27,7 +27,8 @@ function(numeric)calc_usfs(integer nsize, object<Mutation> mut_vec, object<Genom
     if(frequency){
         sfs = sfs/sum(sfs);
     }
-    return sfs[1:nsize];
+    //return sfs[1:nsize];
+    return sfs;
 }
 
 
@@ -74,9 +75,11 @@ function(string)summary_stats(integer nsize){
 	sfs_s = sfs2 + sfs3;
 	
     //prop of substitutions that are adaptive class
-	alpha = s3_count/(s1_count+s2_count+s3_count);
 
-	return paste(c(c(paste(sfs1, sep = ","), "\t", paste(sfs_s, sep = ",")), "\t", alpha));
+	fixed = s1_count+s2_count+s3_count;
+	alpha = s3_count/fixed;
+
+	return paste(c(c(paste(sfs1, sep = ","), "\t", paste(sfs_s, sep = ",")), "\t", alpha, "\t", fixed));
 
 
     /*
@@ -142,8 +145,6 @@ initialize() {
     defineConstant("N_0", n0);
     defineConstant("T_B", tb);
     defineConstant("T_0", t0);
-	
-	
 	
     defineConstant("n_exons", 4);
     defineConstant("exon_size", 200);
@@ -234,7 +235,7 @@ s3 late() {
 */
 
  
-	header = c("line", "n", "sfs_neutral", "sfs_selected", "alpha", "mu", "c", "loci", 
+	header = c("line", "n", "sfs_neutral", "sfs_selected", "alpha", "fixed", "mu", "c", "loci", 
 				"neg_mean", "neg_shape", "pos_mean", "pos_shape", "neg_prop", 
 				"N_A", "N_B", "N_0", "T_B", "T_0");
    
@@ -242,7 +243,7 @@ s3 late() {
 	cat(paste(header, sep = "\t"));
 	cat("\n"); 
    
-	param_string = c(mut, rr, n_loci, 
+	param_string = c(mut, rr, n_loci,
 				     n_mean, n_shape, p_mean, p_shape, n_prop, 
 				     N_A, N_B, N_0, T_B, T_0);
 						  
