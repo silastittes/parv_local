@@ -63,7 +63,6 @@ rule nuctable:
     shell:
         "python src/maf2nuccounts.py -f {input}  -t unknown -m 0.001  > {output}"
 
-
 grps = ["lux", "diplo"]
 rule anc_bed:
     input:

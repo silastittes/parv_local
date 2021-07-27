@@ -8,11 +8,11 @@ prior_df <- tibble(
   mu = rep(3e-6, reps),
   c = rep(1e-6, reps),
   loci = rep(2e7, reps),
-  neg_mean = -runif(reps, 0, 0.1),
-  neg_shape = runif(reps, 0, 10),
-  pos_mean = runif(reps, 0, 0.1),
-  pos_shape = runif(reps, 0, 10),
-  neg_prop = runif(reps, 0.75, 1),
+  neg_mean = -runif(reps, 0, 0.05),
+  neg_shape = runif(reps, 0, 1),
+  pos_mean = runif(reps, 0, 0.05),
+  pos_shape = runif(reps, 0, 1),
+  neg_prop = runif(reps, 0.90, 1),
   pos_prop = 1-neg_prop,
   na = as.integer(runif(reps, 10, 2000)), #!
   nb = as.integer(runif(reps, 10, 2000)), #!
