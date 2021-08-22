@@ -5,8 +5,8 @@ import random
 
 parser = argparse.ArgumentParser(
     prog = "maf2counts",
-    #description = "convert maf file produced by beagle to nucleotide count format used est-sfs. Output is bed position, major allele, minor allele, and the nucleotide table."
-    description = "convert maf file produced by beagle to nucleotide count format used est-sfs. Output is bed positions, and the nucleotide table."
+    #description = "convert maf file produced by ANGSD to nucleotide count format used est-sfs. Output is bed position, major allele, minor allele, and the nucleotide table."
+    description = "convert maf file produced by ANGSD to nucleotide count format used est-sfs. Output is bed positions, and the nucleotide table."
 )
 
 parser.add_argument('-f', '--maf_file', type=str, required = True,
