@@ -10,6 +10,7 @@ test.vcf.gz
 test.vcf.gz.tbi
 test.vcf.stats
 test_plot/
+.preds
 .ipynb_checkpoints/
 src/ngsRelate
 src/htslib
