@@ -258,7 +258,6 @@ rule all:
 
 include: "rules/process_raw.smk"
 include: "rules/mop.smk"
-include: "rules/popgen.smk"
 include: "rules/outgroup.smk"
 include: "rules/angsd.smk"
 include: "rules/mk.smk"
