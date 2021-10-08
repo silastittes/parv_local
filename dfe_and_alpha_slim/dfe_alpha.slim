@@ -32,7 +32,7 @@ function(numeric)calc_usfs(integer nsize, object<Mutation> mut_vec, object<Genom
 }
 
 
-function(string)summary_stats(integer nsize){
+function(string)summary_stats(integer nsize, integer N){
 
 	//sample individuals
 	allIndividuals = sim.subpopulations.genomes;
@@ -64,10 +64,24 @@ function(string)summary_stats(integer nsize){
 	s3_vec = p3_vec[p3_vec >= 1];
 	
 	//count substitutions
-	s1_count = size(s1_vec);
+	//s1_count = size(s1_vec);
+    //s2_count = size(s2_vec);
+    //s3_count = size(s3_vec);
+    
+    s1_vec = sim.substitutions[sim.substitutions.mutationType == m1];
+    s2_vec = sim.substitutions[sim.substitutions.mutationType == m2];
+    s3_vec = sim.substitutions[sim.substitutions.mutationType == m3];
+
+    s1_vec = s1_vec[s1_vec.fixationGeneration > N];
+    s2_vec = s2_vec[s2_vec.fixationGeneration > N];
+    s3_vec = s3_vec[s3_vec.fixationGeneration > N];
+    //print("look at me!!!");
+    //print(s1_vec);
+
+    s1_count = size(s1_vec);
     s2_count = size(s2_vec);
     s3_count = size(s3_vec);
-
+   
 
 	sfs1 = calc_usfs(nsize, m1_vec, sampledIndividuals, frequency = F);
 	sfs2 = calc_usfs(nsize, m2_vec, sampledIndividuals, frequency = F);
@@ -167,9 +181,9 @@ initialize() {
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeMutationType("m2", 0.5, "g", n_mean, n_shape);
 	initializeMutationType("m3", 0.5, "g", p_mean, p_shape);
-	m1.convertToSubstitution = F;	
-	m2.convertToSubstitution = F;
-	m3.convertToSubstitution = F;
+	m1.convertToSubstitution = T;	
+	m2.convertToSubstitution = T;
+	m3.convertToSubstitution = T;
 
 
 	
@@ -252,7 +266,7 @@ s3 late() {
 
    
 	for(i in samps){
-		SFSs = summary_stats(asInteger(i));
+		SFSs = summary_stats(asInteger(i), 10*N_A);
    	    line = paste(c("line", i, SFSs, param_string), sep = "\t");
    	    cat(line);
    	    cat("\n");
