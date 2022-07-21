@@ -23,9 +23,17 @@ color_df <-
     color = rep(color, each = 2)
     )
 
-hexs <- gplots::col2hex(color_df$color)
-names(hexs) <- color_df$pop
+col2hex <- function(colors){
+  rgb_mat <- col2rgb(colors)
+  sapply(1:ncol(rgb_mat), function(x) {
+    c_set <- rgb_mat[,x]
+    rgb(c_set[1], c_set[2], c_set[3], maxColorValue=255)
+  })
+}
 
+
+hexs <- col2hex(color_df$color)
+names(hexs) <- color_df$pop
 
 make_legplot <- function(text_size = 2.5){
     color_df %>%

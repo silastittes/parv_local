@@ -1,0 +1,117 @@
+import numpy as np
+rng = np.random.default_rng(1984)
+
+reps_per = [100, 100, 100] # hard, incomplete, soft
+reps = sum(reps_per) #vanilla sweeps, artial sweeps, soft sweeps
+
+sample = 20
+size = 400000 #segment size
+window = 100 #snps per window (raisd)
+mu= 3e-8 #mutation per bp
+r = 1e-8 #recombination per b
+alpha = 50 #2Ns
+
+#these are set after demopgraphy is available below
+#theta= 0.01
+#Ne = theta / (4 *mu)
+#rho = 4*Ne*r
+
+start_freq = [[0.0]*reps_per[0], 
+              [0.0]*reps_per[1], 
+              np.random.beta(1, 20, reps_per[2])] 
+start_freq = np.reshape(start_freq, (reps, ))
+
+end_freq = [[0.999]*reps_per[0], #hard and complete
+            [0.5]*reps_per[1], #hard and incomplete
+            [0.999]*reps_per[2]] #soft complete
+end_freq = np.reshape(end_freq, (reps,))
+
+#print(end_freq)
+seed1 = np.floor(rng.uniform(1, 1e6, reps))
+seed2 = np.floor(rng.uniform(1, 1e6, reps))
+
+
+#grab a demography
+en_string = ""
+with open ("/group/jrigrp10/stittes/parv_local_v5_til11/data/mushi/v5--LR--random2_Palmar_Chico--mushi_demography.txt") as file:
+    time1, N0, *extra = file.readline().strip().split()
+    N0 = float(N0)
+    if time1 != "1.0":
+        raise ValueError('The first generation of the demography is not 1!')
+    for line in file:
+        if line.strip():
+            time, N, *extra = line.strip().split()
+            time = float(time)/(4*N0)
+            N = float(N)/N0
+            print(time, N)
+            en_string += f"-en {time} 0 {N}"
+
+theta = 4*N0*mu
+rho = 4*N0*r
+
+
+rule all:
+    input:
+        [f"output/bed/rep-{i}_seed1-{seed1[i]}_seed2-{seed2[i]}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_sub-1.bed" for i in range(reps)],
+        [f"output/bed/rep-{i}_seed1-{seed1[i]}_seed2-{seed2[i]}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_sub-2.bed" for i in range(reps)]
+
+rule discoal:
+    resources:
+        runtime=300, #minutes
+        mem_mb = lambda wildcards, attempt: attempt * 32000
+    output:
+        "output/discoal/rep-{rep}_seed1-{seed1}_seed2-{seed2}_startfreq-{start_freq}_endfreq-{end_freq}_sub-1.txt"
+    params:
+        demography = en_string,
+        sample = sample,
+        size = size,
+        theta_s = size*theta,
+        rho_s = size*rho,
+        alpha = alpha,
+        seed1 = "{seed1}",
+        seed2 = "{seed2}",
+        start_freq = "{start_freq}",
+        end_freq = "{end_freq}"
+    shell:
+        """
+        src/discoal {params.sample} 1 {params.size} {params.demography} -t {params.theta_s} -r {params.rho_s} -wd 0 -a {params.alpha} -f {params.start_freq} -c {params.end_freq} -d {params.seed1} {params.seed2} -x 0.5 > {output}
+        """ 
+
+rule split:
+    input:
+        "output/discoal/rep-{combo}_sub-1.txt"
+    output:
+        "output/discoal/discoal_{combo}_sub_{sub}.txt"
+    params:
+        prefix = "output/discoal/discoal_{combo}_sub"
+    shell:
+        "python src/ms_sub/ms_sub.py {input} -p {params.prefix}"
+
+rule raisd:
+    input:
+        discoal = "output/discoal/discoal_{combo}_sub_{sub}.txt"
+    output:
+        "output/raisd/RAiSD_Report.{combo}_sub-{sub}"
+    params:
+        size = size,
+        window = window,
+        outdir = "output/raisd/",
+        suffix = "{combo}_sub-{sub}"
+    shell:
+        """
+        src/RAiSD -n {params.suffix} -I {input.discoal} -L {params.size} -f -w {params.window}
+        mv RAiSD_Info.{params.suffix} {params.outdir}
+        mv RAiSD_Report.{params.suffix} {output}
+        """        
+
+rule bed:
+    input:
+        "output/raisd/RAiSD_Report.{combo}_sub-{sub}"        
+    output:
+        "output/bed/{combo}_sub-{sub}.bed"
+    shell:
+        """
+        awk '$2 > 5' {input} | awk 'NR>1{{print "ch1\\t" $1-1 "\\t" $1 "\\t" $2}}' | bedtools merge -i stdin -d 100000 -c 4 -o max > {output}
+        """
+
+

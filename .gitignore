@@ -1,5 +1,7 @@
 .nextflow*
-dfe_and_alpha_slim/.nextflow*
+src/mushi-0.2.0/
+src/v0.2.0.tar.gz
+fe_and_alpha_slim/.nextflow*
 dfe_and_alpha_slim/work
 freqs_test.txt
 data/
@@ -33,3 +35,12 @@ notebooks/bgs_bestfit_mu-8.rds
 notebooks/RAiSD_Info.SUBSAMPLE
 notebooks/RAiSD_Report.SUBSAMPLE.chr6
 notebooks/RAiSD_Report.SUBSAMPLE.chr6.corrected
+review_response_analyses/raisd_search/merged/*
+review_response_analyses/raisd_search/mushi/*
+review_response_analyses/raisd_search/overlaps/*
+review_response_analyses/raisd_search/slurm_log/*
+review_response_analyses/raisd_search/snp_window/*
+review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/bed/*
+review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/discoal/*
+review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/raisd/*
+review_response_analyses/sim_sweep_accuracy/old_ignore/*

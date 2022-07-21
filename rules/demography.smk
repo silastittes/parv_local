@@ -3,7 +3,7 @@ rule raisd:
         "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz"
     output:
         info = "data/raisd/RAiSD_Info.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.txt",
-        report = "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.txt"
+        reports = "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.txt"
     params:
         pop = "{ref}--{ssp}--{pop}--{c}--{r1}--{r2}",
         chrom = "{c}",
@@ -13,11 +13,10 @@ rule raisd:
         """
         mkdir -p data/raisd/
 
-        #src/raisd-master/RAiSD -R -s -m 0.05 -n {params.pop} -I {input} -M 2 -y 2 -w 100 -f
-        src/raisd-master/RAiSD -R -s -m 0.05 -n {params.pop} -I {input} -w 100 -f
+        src/raisd-master/RAiSD -R -s -n {params.pop} -I {input} -w 50 -m 0.05 -f 
 
         mv {params.i1} {output.info}
-        mv {params.r1} {output.report} 
+        mv {params.r1} {output.reports} 
         """
 
 rule var_correct:
@@ -41,9 +40,6 @@ rule var_correct:
         #awk 'BEGIN{{OFS="\\t"}}{{varnew = (1)*$5; print $1, $2, $3, $4, varnew, $6, $7, varnew*$6*$7}}' > {output}
 
 
-
-
-
 #mushi_out = expand("data/mushi/RAiSD_Report.v5--{ssp}--{pop}_msprime", zip, ssp = SSP, pop = POP)
 wind=50000
 rule mush:
@@ -57,10 +53,8 @@ rule mush:
         pop_id = "{ssp}--{pop}"
     shell:
         """
-        python src/sim_mushi.py -i {params.pop_id} -s {input} -p {params.prefix}  -n 1000 -b {wind}
+        python src/sim_mushi.py -i {params.pop_id} -s {input} -p {params.prefix}  -n 100 -b {wind}
         """
-
-
 
 rule demography_hbd:
     input:
@@ -78,16 +72,16 @@ rule mushi_raisd:
         mspms = "data/mushi/{ref}--{ssp}--{pop}--mushi_ms.txt"
     output:
         info = "data/mushi/RAiSD_Info.{ref}--{ssp}--{pop}--msprime",
-        report = "data/mushi/RAiSD_Report.{ref}--{ssp}--{pop}--msprime"
+        reports = "data/mushi/RAiSD_Report.{ref}--{ssp}--{pop}--msprime"
     params:
         pop = "{ref}--{ssp}--{pop}--msprime",
         i1 = "RAiSD_Info.{ref}--{ssp}--{pop}--msprime",
         r1 = "RAiSD_Report.{ref}--{ssp}--{pop}--msprime"
     shell:
         """
-        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 100
+        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 50 -m 0.05 
         mv {params.i1} {output.info}
-        mv {params.r1} {output.report} 
+        mv {params.r1} {output.reports} 
         """
 
 rule raisd_outliers:
@@ -98,7 +92,7 @@ rule raisd_outliers:
         "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.corrected_block_outliers"
     shell:
         """
-        quantile=`grep -v "//" {input.msprime} | awk '{{print $2}}' | sort -rg | perl -e '$d=0.01;@l=<>;print $l[int($d*$#l)]'`
+        quantile=`grep -v "//" {input.msprime} | awk '{{print $2}}' | sort -rg | perl -e '$d=0.001;@l=<>;print $l[int($d*$#l)]'`
         cat {input.raisd} | awk -v quantile=$quantile '{{OFS = "\\t"}}; $8 > quantile {{print $1, $2-1, $2, $5, $6, $7, $8}}' | bedtools sort -i stdin  | bedtools merge -i stdin -d 100000 -c 7 -o max > {output}
         """
 
@@ -125,11 +119,12 @@ pops_string = "data/raisd/v5--LR--Amatlan_de_Canas.corrected_block_outliers_merg
 "data/raisd/v5--Teo--random1_Palmar_Chico.corrected_block_outliers_merged.txt " + \
 "data/raisd/v5--Teo--random2_Palmar_Chico.corrected_block_outliers_merged.txt " + \
 "data/raisd/v5--Teo--random.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--San_Lorenzo.corrected_block_outliers_merged.txt "
+"data/raisd/v5--Teo--San_Lorenzo.corrected_block_outliers_merged.txt"
 
+#expand("data/raisd/{{ref}}--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp  = mSSP, pop = mPOP)
 rule shared:
     input:
-        expand("data/raisd/{{ref}}--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp  = mSSP, pop = mPOP)
+        raisd_merged
     output:
         "data/raisd/{ref}--allpops--shared_outliers.txt"
     shell:
@@ -143,64 +138,4 @@ bedtools sort -i stdin |\
 bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
         """
 
-## NOT USING
-
-dadi = "src/sim_dadi_raisd.py"
-#dadi = "src/sim_dadi_3epoch_raisd.py"
-rule dadi:
-    input:
-        "data/angsd_sfs/{ref}--{ssp}--{pop}_fold4_{nucs}_sfs.txt"
-    output: 
-        "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_msprime.txt"
-    params:
-        prefix = "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}"
-    shell:
-        "python {dadi} -n 1000 -b {wind} -s {input} -p {params.prefix}"
-
-rule sample_stats:
-    input:
-        "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_msprime.txt"
-    output:
-        "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_mspms_stats.txt"
-    shell:
-        "cat {input} | src/msdir/sample_stats > {output}"
-
-
-rule dadi_full:
-    input:
-        "data/angsd_pi/{ref}--{ssp}--{pop}.sfs"
-    output: 
-        "data/dadi/{ref}--{ssp}--{pop}--FULL_msprime.txt"
-    params:
-        prefix = "data/dadi/{ref}--{ssp}--{pop}--FULL"
-    shell:
-        "python {dadi} -n 1000 -b {wind} -s {input} -p {params.prefix}"
-
-rule sample_stats_full:
-    input:
-        "data/dadi/{ref}--{ssp}--{pop}--FULL_msprime.txt"
-    output:
-        "data/dadi/{ref}--{ssp}--{pop}--FULL_mspms_stats.txt"
-    shell:
-        "cat {input} | src/msdir/sample_stats > {output}"
-
-
-
-rule msprime_raisd:
-    input:
-        mspms = "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_msprime.txt",
-        stats = "data/dadi/{ref}--{ssp}--{pop}_fold4_{nucs}_mspms_stats.txt"
-    output:
-        info = "data/dadi/RAiSD_Info.{ref}--{ssp}--{pop}_{nucs}_msprime",
-        report = "data/dadi/RAiSD_Report.{ref}--{ssp}--{pop}_{nucs}_msprime"
-    params:
-        pop = "{ref}--{ssp}--{pop}_{nucs}_msprime",
-        i1 = "RAiSD_Info.{ref}--{ssp}--{pop}_{nucs}_msprime",
-        r1 = "RAiSD_Report.{ref}--{ssp}--{pop}_{nucs}_msprime"
-    shell:
-        """
-        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 100
-        mv {params.i1} {output.info}
-        mv {params.r1} {output.report} 
-        """
 

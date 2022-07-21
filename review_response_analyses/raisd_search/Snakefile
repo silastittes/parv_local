@@ -1,0 +1,137 @@
+from collections import namedtuple
+
+#search of raisd parameters to maximize overlap of sweeps between replicate populations
+#just chromosome 1 to reduce number of output files and time
+
+# to save a little effort, gonna break up the optimizatio
+#assess best snp window size, THEN assess best merge window and outlier size.
+#not ideal, but redoing all stages across all parameters is too much. 
+
+#raisd parameters
+snp_window = [10, 24, 50, 100, 200, 500]
+maf = [0.0, 0.05]
+
+#outlier parameters
+outlier_quantile = [0.2, 0.1, 0.05, 0.03, 0.01, 0.005] 
+
+#sweep region parameters 
+merge_window = [100000, 200000, 500000, 1000000, 2000000] 
+
+#param tuples -- this is the bad place
+Raisd = namedtuple("Raisd", "window maf")
+raisd_p = [Raisd(s, m) for s in snp_window for m in maf]
+Merge = namedtuple("Merge", "quantile merge")
+merge_p = [Merge(q, r) for q in outlier_quantile for r in merge_window]
+
+#dimensions
+raisd_d = len(raisd_p)
+merge_d = len(merge_p)
+
+pops = ["v5--Teo--random1_Palmar_Chico",
+        "v5--Teo--random2_Palmar_Chico",
+        "v5--LR--random1_Palmar_Chico",
+        "v5--LR--random2_Palmar_Chico"]
+
+snpwindow_files = [f"snp_window/RAiSD_Report.{popu}_chrom1_window{window}_maf{m}.txt" for popu in pops for window in snp_window for m in maf]
+sim_files = [f"mushi/RAiSD_Report.{popu}_chrom1_window{window}_maf{m}.txt" for popu in pops for window in snp_window for m in maf]
+merge_files = [f"merged/RAiSD_Report.{popu}--chrom1_window{window}_maf{m}_quantile{quantile}_merge{merge}.corrected_block_outliers" for popu in pops for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window]
+overlap_files = [f"overlaps/Palmar_Chico_chrom1_window{window}_maf{m}_quantile{quantile}_merge{merge}.txt" for popu in pops for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window]
+
+rule all:
+    input:
+        snpwindow_files,
+        sim_files,
+        merge_files,
+        overlap_files
+
+
+rule raisd:
+    input:
+        "../../data/angsd_vcf/{population}--chr1--0--308452471.vcf.mop.gz"
+    output:
+        info = "snp_window/RAiSD_Info.{population}_chrom1_window{window}_maf{m}.txt",
+        report = "snp_window/RAiSD_Report.{population}_chrom1_window{window}_maf{m}.txt"
+    params:
+        population = "{population}",
+        window = "{window}",
+        maf = "{m}",
+        name = "{population}_chrom1_window{window}_maf{m}.txt",
+        i1 = "RAiSD_Info.{population}_chrom1_window{window}_maf{m}.txt",
+        r1 = "RAiSD_Report.{population}_chrom1_window{window}_maf{m}.txt"
+    shell:
+        """
+        src/RAiSD -R -s -m {params.maf} -n {params.name} -I {input} -w {params.window} -f
+        mv {params.i1} {output.info}
+        mv {params.r1}.chr1 {output.report} 
+        """
+
+rule var_correct:
+    input:
+        raisd="snp_window/RAiSD_Report.{population}_chrom1_window{window}_maf{m}.txt",
+        bed = "../../data/mop/{population}--chr1--0--308452471.bed"
+    output:
+        "snp_window/RAiSD_Report.{population}_chrom1_window{window}_maf{m}.txt.corrected"
+    params:
+        c = "chr1"
+    shell:
+        """
+        awk -v c={params.c} 'BEGIN{{OFS = "\\t"}}; NR > 1 {{print c, $2-1, $3, $0, $3-$2+1}}' {input.raisd} |\
+        bedtools groupby -i - -g 1,2,3,4,5,6 -c 7,8,9,10,11 -o last,last,last,last,distinct |\
+        bedtools intersect -a - -b {input.bed} |\
+        awk 'BEGIN{{OFS = "\\t"}};{{print $0, $3-$2}}' |\
+        bedtools groupby -i stdin -g 1,4,5,6 -c 7,8,9,10,11,12 -o distinct,distinct,distinct,distinct,distinct,sum |\
+        awk 'BEGIN{{OFS="\\t"}}{{varnew = ($10/$9)*$5; print $1, $2, $3, $4, varnew, $6, $7, varnew*$6*$7}}' > {output}
+        """
+
+
+### need one more rule to make msprime sims?
+rule mushi_raisd:
+    input:
+        mspms = "../../data/mushi/{population}--mushi_ms.txt"
+    output:
+        report = "mushi/RAiSD_Report.{population}_chrom1_window{window}_maf{m}.txt",
+        info = "mushi/RAiSD_Info.{population}_chrom1_window{window}_maf{m}.txt"
+    params:
+        popu = "{population}_chrom1_window{window}_maf{m}",
+        i1 = "RAiSD_Info.{population}_chrom1_window{window}_maf{m}",
+        r1 = "RAiSD_Report.{population}_chrom1_window{window}_maf{m}",
+        window = "{window}",
+        maf = "{m}",
+    shell:
+        """
+        src/RAiSD -I {input.mspms} -n {params.popu} -L 50000 -w {params.window} -m {params.maf} 
+        mv {params.i1} {output.info}
+        mv {params.r1} {output.report} 
+        """
+
+#THE PROBLEM IS HERE, INDEX EXPANDS IN SIZE, SO PREVIOUS RULE LOOKS FOR NAMES WITH THE SAME INDEX, BUT THE PREVIOUS INDEX IS SMALLER!!!
+rule raisd_outliers:
+    input:
+        msprime = "mushi/RAiSD_Report.{popu}_chrom1_window{window}_maf{m}.txt",
+        raisd = "snp_window/RAiSD_Report.{popu}_chrom1_window{window}_maf{m}.txt.corrected"
+    output:
+        "merged/RAiSD_Report.{popu}--chrom1_window{window}_maf{m}_quantile{quantile}_merge{merge}.corrected_block_outliers"
+    params:
+         q = "{quantile}",
+         merge = "{merge}"
+    shell:
+        """
+        quantile=`grep -v "//" {input.msprime} | awk '{{print $2}}' | sort -rg | perl -e '$d={params.q};@l=<>;print $l[int($d*$#l)]'`
+        cat {input.raisd} | awk -v quantile=$quantile '{{OFS = "\\t"}}; $8 > quantile {{print $1, $2-1, $2, $5, $6, $7, $8}}' | bedtools sort -i stdin  | bedtools merge -i stdin -d {params.merge} -c 7 -o max > {output}
+        """
+
+rule shared:
+    input:
+        expand("merged/RAiSD_Report.v5--{ssp}--random{subsample}_Palmar_Chico--chrom1_window{{window}}_maf{{m}}_quantile{{quantile}}_merge{{merge}}.corrected_block_outliers", subsample = [1,2], ssp = ["LR", "Teo"])
+    output:
+        "overlaps/Palmar_Chico_chrom1_window{window}_maf{m}_quantile{quantile}_merge{merge}.txt"
+    shell:
+        """
+cat {input} |\
+bedtools sort -i stdin |\
+bedtools merge -i stdin |\
+bedtools intersect -a stdin -b {input} -filenames -wb |\
+cut -f1-4 |\
+bedtools sort -i stdin |\
+bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+        """

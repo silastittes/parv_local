@@ -229,7 +229,7 @@
         "cpus-per-task" : 1,
         "mem" : "8G",
         "time" : "24:00:00",
-        "p" : "med2",
+        "p" : "bigmemm",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },
@@ -238,7 +238,7 @@
         "cpus-per-task" : 1,
         "mem" : "2G",
         "time" : "2:00:00",
-        "p" : "med2",
+        "p" : "bigmemm",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"
     },

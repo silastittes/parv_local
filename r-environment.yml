@@ -96,7 +96,7 @@ dependencies:
   - libblas=3.9.0=3_openblas
   - libcblas=3.9.0=3_openblas
   - libcurl=7.71.1=hcdd3856_8
-  - libdap4=3.20.6=h1d1bd15_1
+  - libdap4
   - libedit=3.1.20191231=he28a2e2_2
   - libev=4.33=h516909a_1
   - libffi=3.3=h58526e2_1
@@ -465,7 +465,7 @@ dependencies:
     - dask==2020.12.0
     - flatbuffers==1.12
     - jax==0.2.5
-    - jaxlib==0.1.57
+    - jaxlib
     - mushi==0.2.0
     - opt-einsum==3.3.0
     - pandas==1.1.4

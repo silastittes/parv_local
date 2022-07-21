@@ -5,6 +5,8 @@ channels:
   - silastittes
 
 dependencies:
+  - pandas
+  - numpy
   - r
   - r-argparse
   - r-vroom
