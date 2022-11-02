@@ -1,7 +1,6 @@
 #separate snakemake file to run rdmc
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 
 CHROM, START, END = glob_wildcards("data/rdmc/freq/v5--allpops--{chrom}--{start}--{end}_freq.txt.gz")
 

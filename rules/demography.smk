@@ -13,7 +13,7 @@ rule raisd:
         """
         mkdir -p data/raisd/
 
-        src/raisd-master/RAiSD -R -s -n {params.pop} -I {input} -w 50 -m 0.05 -f 
+        src/raisd-master/RAiSD -R -s -n {params.pop} -I {input} -w 10 -m 0.05 -f 
 
         mv {params.i1} {output.info}
         mv {params.r1} {output.reports} 
@@ -51,6 +51,8 @@ rule mush:
     params:
         prefix = "data/mushi/{ref}--{ssp}--{pop}--mushi",
         pop_id = "{ssp}--{pop}"
+    #conda:
+    #    "../r-environment.yml"
     shell:
         """
         python src/sim_mushi.py -i {params.pop_id} -s {input} -p {params.prefix}  -n 100 -b {wind}
@@ -79,7 +81,7 @@ rule mushi_raisd:
         r1 = "RAiSD_Report.{ref}--{ssp}--{pop}--msprime"
     shell:
         """
-        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 50 -m 0.05 
+        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 10 -m 0.05 
         mv {params.i1} {output.info}
         mv {params.r1} {output.reports} 
         """
@@ -92,7 +94,7 @@ rule raisd_outliers:
         "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.corrected_block_outliers"
     shell:
         """
-        quantile=`grep -v "//" {input.msprime} | awk '{{print $2}}' | sort -rg | perl -e '$d=0.001;@l=<>;print $l[int($d*$#l)]'`
+        quantile=`grep -v "//" {input.msprime} | awk '{{print $2}}' | sort -rg | perl -e '$d=0.05;@l=<>;print $l[int($d*$#l)]'`
         cat {input.raisd} | awk -v quantile=$quantile '{{OFS = "\\t"}}; $8 > quantile {{print $1, $2-1, $2, $5, $6, $7, $8}}' | bedtools sort -i stdin  | bedtools merge -i stdin -d 100000 -c 7 -o max > {output}
         """
 
@@ -127,15 +129,24 @@ rule shared:
         raisd_merged
     output:
         "data/raisd/{ref}--allpops--shared_outliers.txt"
-    shell:
+    shell:        
         """
-cat {pops_string} |\
-bedtools sort -i stdin |\
-bedtools merge -i stdin |\
-bedtools intersect -a stdin -b {pops_string} -filenames -wb |\
-cut -f1-4 |\
-bedtools sort -i stdin |\
-bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+        cat {input} |\
+        bedtools sort -i stdin |\
+        bedtools intersect -a stdin -b {input} -filenames -wb |\
+        cut -f1-5 |\
+        bedtools sort -i stdin |\
+        bedtools merge -c 5 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
         """
+
+
+#cat {pops_string} |\
+#bedtools sort -i stdin |\
+#bedtools merge -i stdin |\
+#bedtools intersect -a stdin -b {pops_string} -filenames -wb |\
+#cut -f1-4 |\
+#bedtools sort -i stdin |\
+#bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+
 
 

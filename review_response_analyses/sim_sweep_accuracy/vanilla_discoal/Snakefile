@@ -6,7 +6,7 @@ reps = sum(reps_per) #vanilla sweeps, artial sweeps, soft sweeps
 
 sample = 20
 size = 400000 #segment size
-window = 100 #snps per window (raisd)
+window = 10 #snps per window (raisd)
 mu= 3e-8 #mutation per bp
 r = 1e-8 #recombination per b
 alpha = 50 #2Ns
@@ -113,5 +113,3 @@ rule bed:
         """
         awk '$2 > 5' {input} | awk 'NR>1{{print "ch1\\t" $1-1 "\\t" $1 "\\t" $2}}' | bedtools merge -i stdin -d 100000 -c 4 -o max > {output}
         """
-
-
