@@ -1,0 +1,3 @@
+positions   type
+1e4 neutral
+2e5 sweep
