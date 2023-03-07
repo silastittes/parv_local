@@ -66,15 +66,16 @@ pops = [
 
 snpwindow_files = [f"snp_window/RAiSD_Report.{popu}_{x}_window{window}_maf{m}.txt" for popu in pops for window in snp_window for m in maf for x in chroms]
 sim_files = [f"mushi/RAiSD_Report.{popu}_{x}_window{window}_maf{m}.txt" for popu in pops for window in snp_window for m in maf for x in chroms]
-merge_files = [f"merged/RAiSD_Report.{popu}--{x}_window{window}_maf{m}_quantile{quantile}_merge{merge}.corrected_block_outliers" for popu in pops for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window for x in chroms]
+#merge_files = [f"merged/RAiSD_Report.{popu}--{x}_window{window}_maf{m}_quantile{quantile}_merge{merge}.corrected_block_outliers" for popu in pops for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window for x in chroms]
 overlap_files = [f"overlaps/allpops_window{window}_maf{m}_quantile{quantile}_merge{merge}.txt" for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window] 
-
+sweep_regions = [f"sweep_regions/sweeps.{popu}--{x}_window{window}_maf{m}_quantile{quantile}_merge{merge}.csv" for popu in pops for window in snp_window for m in maf for quantile in outlier_quantile for merge in merge_window for x in chroms]
 rule all:
     input:
         snpwindow_files,
         sim_files,
-        merge_files,
+        sweep_regions,
         overlap_files
+        #merge_files, #not currently using
 
 rule raisd:
     input:
@@ -141,6 +142,38 @@ rule mushi_raisd:
         mv {params.r1} {output.reportt} 
         """
 
+rule sweep_regions:
+    input:
+        mushi = "mushi/RAiSD_Report.{popu}_chr{x}--{start}--{end}_window{window}_maf{m}.txt",
+        raisd = "snp_window/RAiSD_Report.{popu}_chr{x}--{start}--{end}_window{window}_maf{m}.txt.corrected"
+    output:
+         outs = "sweep_regions/sweeps.{popu}--chr{x}--{start}--{end}_window{window}_maf{m}_quantile{quantile}_merge{merge}.csv"
+    params:
+         cutoff = lambda wildcards: 1 - float(wildcards.quantile) 
+    conda: 
+        "r-environment"
+    shell:
+        """
+        #get outlier from sims
+        cutoff=`src/sweep_regions.R neutral_cutoff \
+          --quantile {params.cutoff} \
+          -f {input.mushi} \
+          --input_raisd2 TRUE \
+          --delimeter "\\t" | cut -d ":" -f2`
+
+        #run sweep_regions
+        src/sweep_regions.R sweep_regions \
+        --data_frame {input.raisd} \
+        -R TRUE \
+        --delimeter "\\t" \
+        --merge_size {wildcards.merge} \
+        --cutoff ${{cutoff}} \
+        --min_size 1e3 \
+        --max_size 1e8 \
+        --out_file {output}
+        """
+
+#not using with switch to sweep_regions
 rule raisd_outliers:
     input:
         msprime = "mushi/RAiSD_Report.{popu}_chr{x}--{start}--{end}_window{window}_maf{m}.txt",
@@ -158,9 +191,11 @@ rule raisd_outliers:
         cat {input.raisd} | awk -v quantile=$quantile '{{OFS = "\\t"}}; $8 > quantile {{print $1, $2-1, $2, $5, $6, $7, $8}}' | bedtools sort -i stdin  | bedtools merge -i stdin -d {params.merge} -c 7 -o max > {output}
         """
 
+
 rule shared:
     input:
-        expand("merged/RAiSD_Report.{popu}--{x}_window{{window}}_maf{{m}}_quantile{{quantile}}_merge{{merge}}.corrected_block_outliers", subsample = [1,2], ssp = ["LR", "Teo"], x = chroms, popu = pops)
+        #expand("merged/RAiSD_Report.{popu}--{x}_window{{window}}_maf{{m}}_quantile{{quantile}}_merge{{merge}}.corrected_block_outliers", subsample = [1,2], ssp = ["LR", "Teo"], x = chroms, popu = pops)
+        expand("sweep_regions/sweeps.{popu}--{x}_window{{window}}_maf{{m}}_quantile{{quantile}}_merge{{merge}}.bed", subsample = [1,2], ssp = ["LR", "Teo"], x = chroms, popu = pops)
     output:
         "overlaps/allpops_window{window}_maf{m}_quantile{quantile}_merge{merge}.txt"
     resources:
@@ -170,15 +205,15 @@ rule shared:
         cat {input} |\
         bedtools sort -i stdin |\
         bedtools intersect -a stdin -b {input} -filenames -wb |\
-        cut -f1-5 |\
+        cut -f1-4 |\
         bedtools sort -i stdin |\
-        bedtools merge -c 5 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+        bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
         """
+
+#cat {input} |\
+#bedtools sort -i stdin |\
+#bedtools intersect -a stdin -b {input} -filenames -wb |\
+#cut -f1-5 |\
+#bedtools sort -i stdin |\
+#bedtools merge -c 5 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
         
-        #cat {input} |\
-        #bedtools sort -i stdin |\
-        #bedtools merge -i stdin |\ #bad
-        #bedtools intersect -a stdin -b {input} -filenames -wb |\
-        #cut -f1-4 |\ #dropping merge changes number of columns
-        #bedtools sort -i stdin |\
-        #bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 

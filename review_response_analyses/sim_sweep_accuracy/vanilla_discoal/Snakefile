@@ -1,17 +1,21 @@
 import numpy as np
-rng = np.random.default_rng(1984)
+from itertools import cycle
+rng = np.random.default_rng(84)
 
 reps_per = [100, 100, 100] # hard, incomplete, soft
-reps = sum(reps_per) #vanilla sweeps, artial sweeps, soft sweeps
+reps = sum(reps_per) #vanilla sweeps, partial sweeps, soft sweeps
 
 sample = 20
+maf = 0.05
+merge_size = 5e4
 size = 400000 #segment size
-window = 10 #snps per window (raisd)
+window = 24 #snps per window (raisd)
 mu= 3e-8 #mutation per bp
 r = 1e-8 #recombination per b
-alpha = 50 #2Ns
+#alpha = 50 #2Ns
+alpha = [0, 10, 50, 100] #2Ns
 
-#these are set after demopgraphy is available below
+#these are set after demography is available below
 #theta= 0.01
 #Ne = theta / (4 *mu)
 #rho = 4*Ne*r
@@ -19,17 +23,16 @@ alpha = 50 #2Ns
 start_freq = [[0.0]*reps_per[0], 
               [0.0]*reps_per[1], 
               np.random.beta(1, 20, reps_per[2])] 
-start_freq = np.reshape(start_freq, (reps, ))
+start_freq = list(np.reshape(start_freq, (reps,)))*len(alpha)
 
 end_freq = [[0.999]*reps_per[0], #hard and complete
             [0.5]*reps_per[1], #hard and incomplete
             [0.999]*reps_per[2]] #soft complete
-end_freq = np.reshape(end_freq, (reps,))
+end_freq = list(np.reshape(end_freq, (reps,)))*len(alpha)
 
 #print(end_freq)
-seed1 = np.floor(rng.uniform(1, 1e6, reps))
-seed2 = np.floor(rng.uniform(1, 1e6, reps))
-
+seed1 =  rng.integers(1, 2**16 - 1, reps*len(alpha))
+seed2 =  rng.integers(1, 2**16 - 1, reps*len(alpha))
 
 #grab a demography
 en_string = ""
@@ -44,44 +47,48 @@ with open ("/group/jrigrp10/stittes/parv_local_v5_til11/data/mushi/v5--LR--rando
             time = float(time)/(4*N0)
             N = float(N)/N0
             print(time, N)
-            en_string += f"-en {time} 0 {N}"
+            en_string += f" -en {time} 0 {N}"
 
 theta = 4*N0*mu
 rho = 4*N0*r
 
-
+bed1 = [f"output/bed/rep-{i}_seed1-{s1}_seed2-{s2}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_alpha-{a}_sub-1.bed" for ((i, s1), s2, a) in zip(enumerate(seed1), seed2, cycle(alpha))]
+bed2 = [b.replace("sub-1.bed", "sub-2.bed") for b in bed1]
+regions1 = [f"output/sweep_regions/rep-{i}_seed1-{s1}_seed2-{s2}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_alpha-{a}_sub-1.csv" for ((i, s1), s2, a) in zip(enumerate(seed1), seed2, cycle(alpha))]
+regions2 = [r.replace("sub-1.csv", "sub-2.csv") for r in regions1]
 rule all:
     input:
-        [f"output/bed/rep-{i}_seed1-{seed1[i]}_seed2-{seed2[i]}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_sub-1.bed" for i in range(reps)],
-        [f"output/bed/rep-{i}_seed1-{seed1[i]}_seed2-{seed2[i]}_startfreq-{start_freq[i]}_endfreq-{end_freq[i]}_sub-2.bed" for i in range(reps)]
+        #bed1, bed2,
+        regions1, regions2
+        
 
 rule discoal:
     resources:
         runtime=300, #minutes
-        mem_mb = lambda wildcards, attempt: attempt * 32000
+        mem_mb = lambda wildcards, attempt: attempt * 8000
     output:
-        "output/discoal/rep-{rep}_seed1-{seed1}_seed2-{seed2}_startfreq-{start_freq}_endfreq-{end_freq}_sub-1.txt"
+        "output/discoal/rep-{rep}_seed1-{seed1}_seed2-{seed2}_startfreq-{start_freq}_endfreq-{end_freq}_alpha-{alpha}_sub-1.txt"
     params:
         demography = en_string,
         sample = sample,
         size = size,
         theta_s = size*theta,
-        rho_s = size*rho,
-        alpha = alpha,
-        seed1 = "{seed1}",
-        seed2 = "{seed2}",
-        start_freq = "{start_freq}",
-        end_freq = "{end_freq}"
-    shell:
-        """
-        src/discoal {params.sample} 1 {params.size} {params.demography} -t {params.theta_s} -r {params.rho_s} -wd 0 -a {params.alpha} -f {params.start_freq} -c {params.end_freq} -d {params.seed1} {params.seed2} -x 0.5 > {output}
-        """ 
+        rho_s = size*rho
+    run:
+        if wildcards.alpha != "0":
+            shell("src/discoal {params.sample} 1 {params.size} {params.demography} -t {params.theta_s} -r {params.rho_s} -wd 0 -a {wildcards.alpha} -f {wildcards.start_freq} -c {wildcards.end_freq} -d {wildcards.seed1} {wildcards.seed2} -x 0.5 > {output}")
+        else:
+            shell("src/discoal {params.sample} 1 {params.size} {params.demography} -t {params.theta_s} -r {params.rho_s} -d {wildcards.seed1} {wildcards.seed2} > {output}")
+            
 
 rule split:
     input:
         "output/discoal/rep-{combo}_sub-1.txt"
     output:
         "output/discoal/discoal_{combo}_sub_{sub}.txt"
+    resources:
+        runtime=10, #minutes
+        mem_mb = lambda wildcards, attempt: attempt * 1000
     params:
         prefix = "output/discoal/discoal_{combo}_sub"
     shell:
@@ -92,24 +99,58 @@ rule raisd:
         discoal = "output/discoal/discoal_{combo}_sub_{sub}.txt"
     output:
         "output/raisd/RAiSD_Report.{combo}_sub-{sub}"
+    resources:
+        runtime=10, #minutes
+        mem_mb = lambda wildcards, attempt: attempt * 1000
     params:
         size = size,
         window = window,
         outdir = "output/raisd/",
-        suffix = "{combo}_sub-{sub}"
+        suffix = "{combo}_sub-{sub}",
+        maf = maf,
     shell:
         """
-        src/RAiSD -n {params.suffix} -I {input.discoal} -L {params.size} -f -w {params.window}
+        src/RAiSD -n {params.suffix} -I {input.discoal} -L {params.size} -f -w {params.window} -m {params.maf}
         mv RAiSD_Info.{params.suffix} {params.outdir}
         mv RAiSD_Report.{params.suffix} {output}
         """        
+
+
+rule get_regions:
+    input:
+        raisd = "output/raisd/RAiSD_Report.rep-{combo}_sub-{sub}",
+        true_df = "true_df.txt"
+    output:
+        "output/sweep_regions/rep-{combo}_sub-{sub}.csv"
+    conda:
+        "r-environment"
+    params:
+        merge_size = merge_size
+    shell:
+        """
+        src/sweep_regions/sweep_regions.R sweep_regions \
+          --data_frame {input.raisd} \
+          --positions X1 \
+          --values X2 \
+          --skip_rows 1 \
+          --delimeter "\t" \
+          --merge_size {params.merge_size} \
+          --cutoff 4 \
+          --min_size 1e3 \
+          --max_size 1e8 \
+          --truth_data {input.true_df} \
+          --out_file {output}
+        """
 
 rule bed:
     input:
         "output/raisd/RAiSD_Report.{combo}_sub-{sub}"        
     output:
         "output/bed/{combo}_sub-{sub}.bed"
+    resources:
+        runtime=10, #minutes
+        mem_mb = lambda wildcards, attempt: attempt * 1000
     shell:
         """
-        awk '$2 > 5' {input} | awk 'NR>1{{print "ch1\\t" $1-1 "\\t" $1 "\\t" $2}}' | bedtools merge -i stdin -d 100000 -c 4 -o max > {output}
+        awk '$2 > 10' {input} | awk 'NR>1{{print "ch1\\t" $1-1 "\\t" $1 "\\t" $2}}' | bedtools merge -i stdin -d 100000 -c 4 -o max > {output}
         """
