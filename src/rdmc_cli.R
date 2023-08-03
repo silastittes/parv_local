@@ -161,10 +161,10 @@ if(nrow(sweep_file) > 0){
         n_sites = 20,
         sample_sizes = rep(10, nrow(neut_mat)),
         num_bins = 1000,
-        sels = 10^seq(-5, -1, length.out = 15),
+        sels = 10^seq(-5, -1, length.out = 12),
         times = c(1e2, 1e3, 1e4, 1e5),
-        gs = 10^seq(-3, -1, length.out = 3),
-        migs = 10^(seq(-3, -1, length.out = 2)),
+        gs = 10^seq(-3, -1, length.out = 6),
+        migs = 10^(seq(-3, -1, length.out = 6)),
         sources = sel_vec,
         locus_name = s_file,
         cholesky = TRUE

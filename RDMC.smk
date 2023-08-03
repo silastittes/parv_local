@@ -23,8 +23,7 @@ FREQ_POPS = [
 ]
 
 
-
-sweep_df = pd.read_csv("data/raisd/v5--allpops--shared_outliers.txt",
+sweep_df = pd.read_csv("data/sweep_regions/v5--allpops--shared_outliers.txt",
             sep = "\t",
             names = ["chrom", "start", "end", "length", "files"])
 

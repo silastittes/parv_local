@@ -21,7 +21,7 @@ REF, SSP, POP = glob_wildcards("data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt")
 mx_POP = [f"{i}--{j}" for i, j in  zip(SSP, POP)]
 print(mx_POP)
 mix_POP = list(set(list(filter(lambda a: a not in ['LR--random', 'Teo--random'], mx_POP))))
-print('\n'.join(mix_POP))
+#print('\n'.join(mix_POP))
 
 mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
 mop_files = expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
@@ -92,8 +92,9 @@ mushi_out = expand("data/mushi/RAiSD_Report.v5--{ssp}--{pop}--msprime", zip, ssp
 raisd_corrected = [x for x in raisd_corrected if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 raisd_outliers = [x for x in raisd_outliers if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 raisd_merged = [x for x in raisd_merged if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
-mushi_out = [x for x in mushi_out if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
-
+mushi_out = list(set([x for x in mushi_out if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]))
+pop_sweep_regions = expand("data/sweep_regions/sweeps.v5--{ssp}--{pop}--{chrom}--{start}--{end}.csv", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+pop_sweep_regions = list(set([x for x in pop_sweep_regions if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]))
 
 ##########
 ## RDMC ##
@@ -118,7 +119,7 @@ pop_freqs = [f"data/rdmc/freq/{popz}--{chrom}--{start}--{end}_freq.bed.gz" for c
 
 allpop_freqs = [f"data/rdmc/freq/v5--allpops--{chrom}--{start}--{end}_freq.txt.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND)))]
 
-print('\n'.join(allpop_freqs))
+#print('\n'.join(allpop_freqs))
 
 
 ############
@@ -173,9 +174,11 @@ rule all:
         demography_ibd,
         mushi_out,
         raisd_corrected,
-        raisd_outliers,
-        raisd_merged,
-        "data/raisd/v5--allpops--shared_outliers.txt",
+        #raisd_outliers,
+        #raisd_merged,
+        #"data/raisd/v5--allpops--shared_outliers.txt",
+        pop_sweep_regions,
+        "data/sweep_regions/v5--allpops--shared_outliers.txt",
         pop_freqs,
         allpop_freqs
 

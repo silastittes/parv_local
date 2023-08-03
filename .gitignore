@@ -44,3 +44,6 @@ review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/bed/*
 review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/discoal/*
 review_response_analyses/sim_sweep_accuracy/vanilla_discoal/output/raisd/*
 review_response_analyses/sim_sweep_accuracy/old_ignore/*
+data/sweep_regions/
+
+

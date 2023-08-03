@@ -13,7 +13,7 @@ rule raisd:
         """
         mkdir -p data/raisd/
 
-        src/raisd-master/RAiSD -R -s -n {params.pop} -I {input} -w 10 -m 0.05 -f 
+        src/raisd-master/RAiSD -R -s -n {params.pop} -I {input} -w 24 -m 0.05 -f 
 
         mv {params.i1} {output.info}
         mv {params.r1} {output.reports} 
@@ -81,7 +81,7 @@ rule mushi_raisd:
         r1 = "RAiSD_Report.{ref}--{ssp}--{pop}--msprime"
     shell:
         """
-        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 10 -m 0.05 
+        src/raisd-master/RAiSD -I {input.mspms} -n {params.pop} -L {wind} -w 24 -m 0.05 
         mv {params.i1} {output.info}
         mv {params.r1} {output.reports} 
         """
@@ -98,46 +98,96 @@ rule raisd_outliers:
         cat {input.raisd} | awk -v quantile=$quantile '{{OFS = "\\t"}}; $8 > quantile {{print $1, $2-1, $2, $5, $6, $7, $8}}' | bedtools sort -i stdin  | bedtools merge -i stdin -d 100000 -c 7 -o max > {output}
         """
 
-rule merge_outliers:
+rule sweep_regions:
     input:
-        allfiles = list(set(expand("data/raisd/RAiSD_Report.{{ref}}--{{ssp}}--{{pop}}--{c}--{r1}--{r2}.corrected_block_outliers", zip, c = mCHROM, r1 = mSTART, r2 = mEND)))
+        mushi = "data/mushi/RAiSD_Report.{ref}--{ssp}--{pop}--msprime",
+        raisd = "data/raisd/RAiSD_Report.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.corrected"
     output:
-        "data/raisd/{ref}--{ssp}--{pop}.corrected_block_outliers_merged.txt"
+        beds = "data/sweep_regions/sweeps.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.bed",
+         outs = "data/sweep_regions/sweeps.{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.csv"
+    params:
+         cutoff = 1 - 0.001,
+         merge = 50000
     shell:
-        "cat {input.allfiles} > {output}"
-     
-#files that should be considered for merging, no full palmar chicos 
-pops_string = "data/raisd/v5--LR--Amatlan_de_Canas.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--LR--Crucero_Lagunitas.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--LR--Los_Guajes.corrected_block_outliers_merged.txt  " + \
-"data/raisd/v5--LR--random1_Palmar_Chico.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--LR--random2_Palmar_Chico.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--LR--random.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--LR--San_Lorenzo.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--Amatlan_de_Canas.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--Crucero_Lagunitas.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--El_Rodeo.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--Los_Guajes.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--random1_Palmar_Chico.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--random2_Palmar_Chico.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--random.corrected_block_outliers_merged.txt " + \
-"data/raisd/v5--Teo--San_Lorenzo.corrected_block_outliers_merged.txt"
+        """
+        #get outlier from sims
+        cutoff=`src/sweep_regions/sweep_regions.R neutral_cutoff \
+          --quantile {params.cutoff} \
+          -f {input.mushi} \
+          --input_raisd2 TRUE \
+          --delimeter "\\t" | cut -d ":" -f2`
 
-#expand("data/raisd/{{ref}}--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp  = mSSP, pop = mPOP)
+        #run sweep_regions
+        src/sweep_regions/sweep_regions.R sweep_regions \
+        --data_frame {input.raisd} \
+        -R TRUE \
+        --delimeter "\\t" \
+        --merge_size {params.merge} \
+        --cutoff ${{cutoff}} \
+        --min_size 1e3 \
+        --max_size 1e8 \
+        --out_file {output.outs}
+        """
+
+
+no_pc_bed = [i.replace(".csv", ".bed") for i in pop_sweep_regions]
 rule shared:
     input:
-        raisd_merged
+        no_pc_bed
     output:
-        "data/raisd/{ref}--allpops--shared_outliers.txt"
-    shell:        
+        "data/sweep_regions/{ref}--allpops--shared_outliers.txt"
+    resources:
+        mem_mb = 1000
+    shell:
         """
         cat {input} |\
         bedtools sort -i stdin |\
         bedtools intersect -a stdin -b {input} -filenames -wb |\
-        cut -f1-5 |\
+        cut -f1-4 |\
         bedtools sort -i stdin |\
-        bedtools merge -c 5 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+        bedtools merge -c 4 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
         """
+        
+#rule merge_outliers:
+#    input:
+#        allfiles = list(set(expand("data/raisd/RAiSD_Report.{{ref}}--{{ssp}}--{{pop}}--{c}--{r1}--{r2}.corrected_block_outliers", zip, c = mCHROM, r1 = mSTART, r2 = mEND)))
+#    output:
+#        "data/raisd/{ref}--{ssp}--{pop}.corrected_block_outliers_merged.txt"
+#    shell:
+#        "cat {input.allfiles} > {output}"
+     
+#files that should be considered for merging, no full palmar chicos 
+#pops_string = "data/raisd/v5--LR--Amatlan_de_Canas.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--LR--Crucero_Lagunitas.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--LR--Los_Guajes.corrected_block_outliers_merged.txt  " + \
+#"data/raisd/v5--LR--random1_Palmar_Chico.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--LR--random2_Palmar_Chico.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--LR--random.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--LR--San_Lorenzo.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--Amatlan_de_Canas.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--Crucero_Lagunitas.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--El_Rodeo.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--Los_Guajes.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--random1_Palmar_Chico.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--random2_Palmar_Chico.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--random.corrected_block_outliers_merged.txt " + \
+#"data/raisd/v5--Teo--San_Lorenzo.corrected_block_outliers_merged.txt"
+
+#expand("data/raisd/{{ref}}--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp  = mSSP, pop = mPOP)
+#rule shared:
+#    input:
+#        raisd_merged
+#    output:
+#        "data/raisd/{ref}--allpops--shared_outliers.txt"
+#    shell:        
+#        """
+#        cat {input} |\
+#        bedtools sort -i stdin |\
+#        bedtools intersect -a stdin -b {input} -filenames -wb |\
+#        cut -f1-5 |\
+#        bedtools sort -i stdin |\
+#        bedtools merge -c 5 -o distinct -delim "," | awk '{{print $1 "\\t" $2 "\\t" $3 "\\t" $3-$2 "\\t" $4}}' > {output} 
+#        """
 
 
 #cat {pops_string} |\
