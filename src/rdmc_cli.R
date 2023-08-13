@@ -75,7 +75,6 @@ MIN_SITES <- 1e3
 #snps per cM to get ~ constant density along different sized sweeps 
 SNP_K  <- 250000 
 
-
 neutral_file <- args$neutral_file
 neutral_freqs <- vroom::vroom(file = neutral_file,   
     delim = "\t",
@@ -101,8 +100,13 @@ end <- str_split(s_file, "end", simplify = TRUE) %>%
     `[`(1) %>% 
     as.numeric(c)
 
+sweep_chrom <- str_split(s_file, "sweep--", simplify = TRUE) %>% 
+    `[`(2) %>% 
+    str_split("--", simplify = TRUE) %>% 
+    `[`(1)
+
 #get sweep size in cM. get how many sites to randomly sample along sweep
-sweep_cM <- get_cm(gen_map_all_chr, "chr1", start, end)
+sweep_cM <- get_cm(gen_map_all_chr, sweep_chrom, start, end)
 n_snps <- round(SNP_K*sweep_cM)
 if(is.na(n_snps)) n_snps <- DEFAULT_SITES
 
@@ -112,7 +116,6 @@ n_sites <- case_when(
     n_snps < MIN_SITES ~ MIN_SITES,
     n_snps > MAX_SITES ~ MAX_SITES,
 )
-
 
 
 sel_vec <- str_split(args$pop_ids, "-", simplify = TRUE) %>% 
