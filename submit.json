@@ -264,7 +264,7 @@
     {
         "cpus-per-task" : 1,
         "mem" : "12G",
-        "time" : "24:00:00",
+        "time" : "7-00:00:00",
         "p" : "med2",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
         "e" : "slurm_log/{rule}.{wildcards}.%j.err"

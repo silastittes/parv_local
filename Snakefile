@@ -17,14 +17,14 @@ REGIONS = natural_sort(REGIONS)
 # mop #
 #######
 
-REF, SSP, POP = glob_wildcards("data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt")
+REF, SSP, POP = glob_wildcards("data/bamlist/{ref}--{ssp}--{population}__bamlist.txt")
 mx_POP = [f"{i}--{j}" for i, j in  zip(SSP, POP)]
 print(mx_POP)
 mix_POP = list(set(list(filter(lambda a: a not in ['LR--random', 'Teo--random'], mx_POP))))
 #print('\n'.join(mix_POP))
 
-mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.txt")
-mop_files = expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+mSSP, mPOP, mCHROM, mSTART, mEND = glob_wildcards("data/mop/v5--{ssp}--{population}--{chrom}--{start}--{end}.txt")
+mop_files = expand("data/mop/v5--{ssp}--{population}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 
 chroms = list(set(mCHROM))
 
@@ -33,24 +33,24 @@ chroms = list(set(mCHROM))
 ##########
 
 #SWITCH
-pi_files = expand("data/angsd_pi/v5--{ssp}--{pop}--{chrom}--{start}--{end}.WINDOWBP_theta.thetasWindow.gz.pestPG", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+pi_files = expand("data/angsd_pi/v5--{ssp}--{population}--{chrom}--{start}--{end}.WINDOWBP_theta.thetasWindow.gz.pestPG", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 pi_files = [p.replace("WINDOW", w) for p in pi_files for w in ["1000", "100000", "1000000"]]
 
-pi_full =  expand("data/angsd_pi/v5--{ssp}--{pop}.WINDOWBP_theta.txt", zip, pop = POP, ssp = SSP)
+pi_full =  expand("data/angsd_pi/v5--{ssp}--{population}.WINDOWBP_theta.txt", zip, population = POP, ssp = SSP)
 pi_full = [p.replace("WINDOW", w) for p in pi_full for w in ["1000", "100000", "1000000"]]
 
 ##########
 ##  VCF ##
 ##########
 
-vcf_files = expand("data/angsd_vcf/v5--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.mop.gz",  zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+vcf_files = expand("data/angsd_vcf/v5--{ssp}--{population}--{chrom}--{start}--{end}.vcf.mop.gz",  zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 
 
 ###############
 ## ngsRelate ##
 ###############
 
-relate_files = expand("data/ngsRelate/v5--{ssp}--{pop}.ngsRelate.txt", zip, ssp = SSP, pop = POP)
+relate_files = expand("data/ngsRelate/v5--{ssp}--{population}.ngsRelate.txt", zip, ssp = SSP, population = POP)
 
 ##########
 ### MK ###
@@ -64,7 +64,7 @@ fold = ["0", "4"]
 #WS, SW, SW+WS, ALL
 nucs = ["AG,AC,TG,TC", "GA,GT,CA,CT", "AT,TA,GC,CG", "AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG"]
 
-mk_sites = expand("data/angsd_sfs/v5--{ssp}--{pop}_foldFOLD_NUCS_sfs.txt",  zip, ssp = SSP, pop = POP)
+mk_sites = expand("data/angsd_sfs/v5--{ssp}--{population}_foldFOLD_NUCS_sfs.txt",  zip, ssp = SSP, population = POP)
 
 mk_files = [m.replace("FOLD", f).replace("NUCS", n) for m in mk_sites for f in fold for n in nucs]
 
@@ -75,26 +75,26 @@ K_dict = {"Teo_k": [6], "LR_k": [5]}
 ###########
 
 #
-#dropping full pops for remaining analyses
+#dropping full populations for remaining analyses
 
-raisd_corrected = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}.corrected", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-raisd_outliers = expand("data/raisd/RAiSD_Report.v5--{ssp}--{pop}--{chrom}--{start}--{end}.corrected_block_outliers", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-raisd_merged = expand("data/raisd/v5--{ssp}--{pop}.corrected_block_outliers_merged.txt", zip, ssp = SSP, pop = POP)
+raisd_corrected = expand("data/raisd/RAiSD_Report.v5--{ssp}--{population}--{chrom}--{start}--{end}.corrected", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+raisd_outliers = expand("data/raisd/RAiSD_Report.v5--{ssp}--{population}--{chrom}--{start}--{end}.corrected_block_outliers", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+raisd_merged = expand("data/raisd/v5--{ssp}--{population}.corrected_block_outliers_merged.txt", zip, ssp = SSP, population = POP)
 print('\n'.join(raisd_outliers))
 
 ###########
 ## MUSHI ##
 ##########
 
-mushi_out = expand("data/mushi/RAiSD_Report.v5--{ssp}--{pop}--msprime", zip, ssp = SSP, pop = POP)
+mushi_out = expand("data/mushi/RAiSD_Report.v5--{ssp}--{population}--msprime", zip, ssp = SSP, population = POP)
 
 #drop full PC files
 raisd_corrected = [x for x in raisd_corrected if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 raisd_outliers = [x for x in raisd_outliers if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 raisd_merged = [x for x in raisd_merged if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 mushi_out = list(set([x for x in mushi_out if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]))
-pop_sweep_regions = expand("data/sweep_regions/sweeps.v5--{ssp}--{pop}--{chrom}--{start}--{end}.csv", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-pop_sweep_regions = list(set([x for x in pop_sweep_regions if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]))
+population_sweep_regions = expand("data/sweep_regions/sweeps.v5--{ssp}--{population}--{chrom}--{start}--{end}.csv", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+population_sweep_regions = list(set([x for x in population_sweep_regions if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]))
 
 ##########
 ## RDMC ##
@@ -115,21 +115,21 @@ FREQ_POPS = [
 ]
 
 
-pop_freqs = [f"data/rdmc/freq/{popz}--{chrom}--{start}--{end}_freq.bed.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND))) for popz in FREQ_POPS]
+population_freqs = [f"data/rdmc/freq/{populationz}--{chrom}--{start}--{end}_freq.bed.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND))) for populationz in FREQ_POPS]
 
-allpop_freqs = [f"data/rdmc/freq/v5--allpops--{chrom}--{start}--{end}_freq.txt.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND)))]
+allpopulation_freqs = [f"data/rdmc/freq/v5--allpopulations--{chrom}--{start}--{end}_freq.txt.gz" for chrom, start, end in list(set(zip(mCHROM, mSTART, mEND)))]
 
-#print('\n'.join(allpop_freqs))
+#print('\n'.join(allpopulation_freqs))
 
 
 ############
 ## IBDseq ##
 ############
 
-ibd_files = expand("data/ibdseq/v5--{ssp}--{pop}--{chrom}--{start}--{end}_r2maxR2.hbd", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+ibd_files = expand("data/ibdseq/v5--{ssp}--{population}--{chrom}--{start}--{end}_r2maxR2.hbd", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
 ibd_files = [f.replace("R2", r) for f in ibd_files for r in ["0.7", "0.4"]]
 
-demography_ibd = expand("data/mushi/postsims/v5--{ssp}--{pop}_simREP.hbd", zip, ssp = SSP, pop = POP)
+demography_ibd = expand("data/mushi/postsims/v5--{ssp}--{population}_simREP.hbd", zip, ssp = SSP, population = POP)
 demography_ibd = [d.replace("REP", str(r)) for d in demography_ibd for r in range(10)]
 #demography_ibd = [x for x in demography_ibd if "LR--Palmar_Chico" not in x if "Teo--Palmar_Chico" not in x]
 
@@ -176,11 +176,11 @@ rule all:
         raisd_corrected,
         #raisd_outliers,
         #raisd_merged,
-        #"data/raisd/v5--allpops--shared_outliers.txt",
-        pop_sweep_regions,
-        "data/sweep_regions/v5--allpops--shared_outliers.txt",
-        pop_freqs,
-        allpop_freqs
+        #"data/raisd/v5--allpopulations--shared_outliers.txt",
+        population_sweep_regions,
+        "data/sweep_regions/v5--allpopulations--shared_outliers.txt",
+        population_freqs,
+        allpopulation_freqs
 
 include: "rules/process_raw.smk"
 include: "rules/mop.smk"

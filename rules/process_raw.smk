@@ -23,7 +23,7 @@ rule raw_stat:
         "tidy_vcf -t 10000 -v {input} -o {output.sites} -g {output.genos}"
 
 
-#need to update to allow different pop keys
+#need to update to allow different population keys
 rule filter:
     input:
         vcf = "data/vcf/{ref}/raw/{ref}.vcf.gz",

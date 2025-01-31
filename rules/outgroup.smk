@@ -39,11 +39,11 @@ rule trip_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         trip = "data/{out}/{out}_{ref}.fa.gz",
-        bams = "data/{out}/{ref}--{ssp}--{pop}__bamlist.txt"
+        bams = "data/{out}/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        mafs = "data/{out}/{ref}--{ssp}--{pop}.mafs.gz"
+        mafs = "data/{out}/{ref}--{ssp}--{population}.mafs.gz"
     params:
-        prefix = "data/{out}/{ref}--{ssp}--{pop}"
+        prefix = "data/{out}/{ref}--{ssp}--{population}"
     shell:
         """
         module load angsd
@@ -57,9 +57,9 @@ rule trip_beagle:
 
 rule nuctable:
     input:
-       "data/{out}/{ref}--{ssp}--{pop}.mafs.gz" 
+       "data/{out}/{ref}--{ssp}--{population}.mafs.gz" 
     output:
-        "data/{out}/{ref}--{ssp}--{pop}_nuctable.txt"
+        "data/{out}/{ref}--{ssp}--{population}_nuctable.txt"
     shell:
         "python src/maf2nuccounts.py -f {input}  -t unknown -m 0.001  > {output}"
 
@@ -67,7 +67,7 @@ grps = ["lux", "diplo"]
 rule anc_bed:
     input:
         #"data/diplo/{ref}--diplo--diplo_nuctable.txt"
-        expand("data/{out}/{{ref}}--{ssp}--{pop}_nuctable.txt", zip, out = grps, ssp = grps, pop = grps)
+        expand("data/{out}/{{ref}}--{ssp}--{population}_nuctable.txt", zip, out = grps, ssp = grps, population = grps)
     output:
         "data/anc/{ref}_anc.bed"
     shell:

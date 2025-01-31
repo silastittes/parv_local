@@ -161,7 +161,7 @@ if(nrow(sweep_file) > 0){
         selected_freqs = sweep_mat,
         selected_pops = sel_vec,
         positions = pos_vec,
-        n_sites = 20,
+        n_sites = 200,
         sample_sizes = rep(10, nrow(neut_mat)),
         num_bins = 1000,
         sels = 10^seq(-5, -1, length.out = 12),

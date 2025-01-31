@@ -1,11 +1,11 @@
 rule fold_nuc_sites:
     input:
-        maf = list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{pop}}--{chrom}--{start}--{end}.mafs.gz", zip, chrom = mCHROM, start = mSTART, end = mEND))),
+        maf = list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{population}}--{chrom}--{start}--{end}.mafs.gz", zip, chrom = mCHROM, start = mSTART, end = mEND))),
         #fold = "data/trip/trip_v5_FOLD{fold}",
         #fold = "data/refs/{ref}/{ref}_FOLD{fold}",
         fold = "data/anc/{ref}_anc_FOLD{fold}"
     output:
-        "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt"
+        "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sites.txt"
     params:
         nucs = "{nucs}"
     shell:
@@ -16,9 +16,9 @@ rule fold_nuc_sites:
 
 rule site_index:
     input:
-        "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt"
+        "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sites.txt"
     output:
-        "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt.bin"
+        "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sites.txt.bin"
     shell:
         """
         module load angsd
@@ -30,14 +30,14 @@ rule sfs_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         trip = "data/anc/{ref}_anc.fa",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt",
-        sites_bin = "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt.bin",
-        sites = "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sites.txt"
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt",
+        sites_bin = "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sites.txt.bin",
+        sites = "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sites.txt"
     output:
-        saf = "data/angsd_sfs/{ref}--{ssp}--{pop}--fold{fold}_{nucs}.saf.idx"
+        saf = "data/angsd_sfs/{ref}--{ssp}--{population}--fold{fold}_{nucs}.saf.idx"
     params:
         scratch = my_scratch,
-        prefix = my_scratch + "{ref}--{ssp}--{pop}--fold{fold}_{nucs}",
+        prefix = my_scratch + "{ref}--{ssp}--{population}--fold{fold}_{nucs}",
         final = "data/angsd_sfs/"
     shell:
         """
@@ -66,9 +66,9 @@ rule sfs_beagle:
 
 rule fold_nuc_sfs:
     input:
-        saf = "data/angsd_sfs/{ref}--{ssp}--{pop}--fold{fold}_{nucs}.saf.idx",
+        saf = "data/angsd_sfs/{ref}--{ssp}--{population}--fold{fold}_{nucs}.saf.idx",
     output:
-        "data/angsd_sfs/{ref}--{ssp}--{pop}_fold{fold}_{nucs}_sfs.txt"
+        "data/angsd_sfs/{ref}--{ssp}--{population}_fold{fold}_{nucs}_sfs.txt"
     shell:
         """
         module load angsd

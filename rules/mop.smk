@@ -1,10 +1,10 @@
 
 rule mop:
     input:
-        cfile = "data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.txt",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
+        cfile = "data/mop/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.txt",
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        "data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed"
+        "data/mop/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.bed"
     params:
         chrom = "{chrom}",
         start = "{start}",
@@ -14,9 +14,9 @@ rule mop:
 
 rule mop_merge:
     input:
-        #expand("data/mop/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
-        expand("data/mop/v5--{ssp}--{pop}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, pop = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+        #expand("data/mop/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.bed", zip, ref = mREF, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
+        expand("data/mop/v5--{ssp}--{population}--{chrom}--{start}--{end}.bed", zip, ssp = mSSP, population = mPOP, chrom = mCHROM, start = mSTART, end = mEND)
     output:
-        "data/mop/{ref}--{ssp}--{pop}_all.bed"
+        "data/mop/{ref}--{ssp}--{population}_all.bed"
     run:
         shell("cat {input} > {output}")

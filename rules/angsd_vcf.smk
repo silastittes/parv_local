@@ -1,13 +1,13 @@
-#vcf per pop
+#vcf per population
 rule raisd_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
+        "data/angsd_vcf/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.vcf.gz"
     params:
         scratch = my_scratch,
-        prefix = my_scratch + "{ref}--{ssp}--{pop}--{c}--{r1}--{r2}",
+        prefix = my_scratch + "{ref}--{ssp}--{population}--{c}--{r1}--{r2}",
         final = "data/angsd_vcf/",
         chrom = "{c}",
         r1 = "{r1}",
@@ -30,11 +30,11 @@ rule raisd_beagle:
 #data/mop/v5--LR--random1_Palmar_Chico--chr1--0--308452471.bed
 rule vcf_mop:
     input:
-        mop = "data/mop/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.bed",
-        vcf = "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.gz"
+        mop = "data/mop/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.bed",
+        vcf = "data/angsd_vcf/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.vcf.gz"
     output:
-        vcf="data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz",
-        tabix="data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz.tbi"
+        vcf="data/angsd_vcf/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.vcf.mop.gz",
+        tabix="data/angsd_vcf/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.vcf.mop.gz.tbi"
     shell:
         """
         bedtools intersect -header -a {input.vcf} -b {input.mop} | bgzip > {output.vcf}
@@ -43,11 +43,11 @@ rule vcf_mop:
 
 rule IBDseq:
     input:
-        "data/angsd_vcf/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}.vcf.mop.gz"
+        "data/angsd_vcf/{ref}--{ssp}--{population}--{c}--{r1}--{r2}.vcf.mop.gz"
     output:
-        "data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2max{r2max}.hbd"
+        "data/ibdseq/{ref}--{ssp}--{population}--{c}--{r1}--{r2}_r2max{r2max}.hbd"
     params:
-        prefix = "data/ibdseq/{ref}--{ssp}--{pop}--{c}--{r1}--{r2}_r2max{r2max}",
+        prefix = "data/ibdseq/{ref}--{ssp}--{population}--{c}--{r1}--{r2}_r2max{r2max}",
         r2max = "{r2max}"
     shell:
         "java -jar src/ibdseq.r1206.jar gt={input} out={params.prefix} nthreads=12 r2max={params.r2max}"

@@ -63,7 +63,7 @@ rule chico10_beagle:
         ssp = "{ssp}"
     shell:
         """
-        zcat {input} | cut -f 1-3,`grep -Ff <(cat <(grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep -v Palmar) <(grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep Palmar | shuf -n 10 | sort -V) | awk '{{print $1"t"}}') <(zcat {input} | head -n1 | tr "\\t" "\\n" | cat -n | tail -n+4 | awk '{{print $1 "\\t" $2 "t"}}') | cut -f1 | tr "\\n" "," | sed 's/,$/\\n/g'` | gzip > {output}
+        zcat {input} | cut -f 1-3,`grep -Ff <(cat <(grep {params.ssp} population_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep -v Palmar) <(grep {params.ssp} population_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | cut -f1,4,5 | grep Palmar | shuf -n 10 | sort -V) | awk '{{print $1"t"}}') <(zcat {input} | head -n1 | tr "\\t" "\\n" | cat -n | tail -n+4 | awk '{{print $1 "\\t" $2 "t"}}') | cut -f1 | tr "\\n" "," | sed 's/,$/\\n/g'` | gzip > {output}
         """
 
 rule chico10_admix:
@@ -87,7 +87,7 @@ rule chico_only_beagle:
         ssp = "{ssp}"
     shell:
         """
-        grep {params.ssp} pop_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | grep  Palmar | cut -f1 > {params.ssp}PC_beagleID
+        grep {params.ssp} population_key | grep -v random | awk '{{print "Ind" NR-1 "\\t" $0}}' | grep  Palmar | cut -f1 > {params.ssp}PC_beagleID
         python src/subset_beagle.py -b {input} -i {params.ssp}PC_beagleID | gzip > {output}
         """
 #"zcat {input} | cut -f1-3,124- | gzip > {output}"
@@ -148,17 +148,17 @@ rule chico_chrom:
 #data/angsd_pi/v5--Teo--El_Rodeo.sfs    
 #trip = "data/trip/trip_{ref}.fa.gz",
 
-rule pop_beagle:
+rule population_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         trip = "data/anc/{ref}_anc.fa",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        saf = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.saf.gz"
+        saf = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.saf.gz"
     params:
         scratch = my_scratch,
         final = "data/angsd_pi/",
-        prefix = my_scratch + "{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
+        prefix = my_scratch + "{ref}--{ssp}--{population}--{chrom}--{start}--{end}",
         chrom = "{chrom}",
         start = "{start}",
         end = "{end}"
@@ -188,15 +188,15 @@ rule pop_beagle:
  
         """
 
-rule pop_sfs:
+rule population_sfs:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt",
-        saf = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.saf.gz"
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt",
+        saf = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.saf.gz"
     output:
-        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.sfs"
+        sfs = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.sfs"
     params:
-        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
+        prefix = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}",
     shell:
         """
         module load angsd
@@ -204,14 +204,14 @@ rule pop_sfs:
         realSFS saf2theta {params.prefix}.saf.idx -sfs {params.prefix}.sfs -outname {params.prefix}
         """
 
-rule pop_pi:
+rule population_pi:
     input:
-        sfs = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.sfs"
+        sfs = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.sfs"
     output:
-        pi = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.{win}BP_theta.thetasWindow.gz.pestPG"
+        pi = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.{win}BP_theta.thetasWindow.gz.pestPG"
     params:
-        prefix_in = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}",
-        prefix_out = "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.{win}BP_theta",
+        prefix_in = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}",
+        prefix_out = "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.{win}BP_theta",
         win = "{win}"
     shell:
         """
@@ -221,9 +221,9 @@ rule pop_pi:
 
 rule cat_pi:
     input:
-        list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{pop}}--{chrom}--{start}--{end}.{{win}}_theta.thetasWindow.gz.pestPG", zip, chrom = mCHROM, start = mSTART, end = mEND)))
+        list(set(expand("data/angsd_pi/{{ref}}--{{ssp}}--{{population}}--{chrom}--{start}--{end}.{{win}}_theta.thetasWindow.gz.pestPG", zip, chrom = mCHROM, start = mSTART, end = mEND)))
     output:
-        "data/angsd_pi/{ref}--{ssp}--{pop}.{win}_theta.txt"
+        "data/angsd_pi/{ref}--{ssp}--{population}.{win}_theta.txt"
     shell:
         """
         cat <(head -q -n1 {input} | uniq) <(tail -q -n+2 {input}) > {output}

@@ -1,0 +1,36 @@
+#some goofy one off stuff to get number of overlapping fixed differences 
+
+#this is a good approx for numbers in the uSFS files
+for i in `ls ../data/angsd_sfs/v5--*--fold0_AT,AG,AC,TA,TG,TC,GA,GT,GC,CA,CT,CG.mafs.gz`; do name=`echo $i |\
+  sed 's;..*v5--\(..*\)--fold0..*;\1;g'`; zcat $i |\
+  awk 'NR >1 && $7 >= 0.999998 {print $1 "\t" $2-1 "\t" $2}' > ${name}_Dcount.bed; done
+
+
+prop_shared(){
+    bed1=$1
+    bed2=$2
+    count1=`wc -l $bed1 | cut -d ' ' -f1`
+    count2=`wc -l $bed2 | cut -d ' ' -f1`
+    shared=`bedtools intersect -a $bed1 -b $bed2 | wc -l`
+    prop1=`echo -e "scale=5; $shared/$count1" | bc`
+    prop2=`echo -e "scale=5; $shared/$count2" | bc`
+    echo -e "$bed1 $bed2 $prop1"
+    #echo -e "$bed2 $bed1 $prop2"
+}
+
+export -f prop_shared
+
+paste -d " " <(for i in `ls Teo*`; do for l in {1..9}; do echo $i; done; done) <(for l in {1..9}; do for i in `ls Teo*`; do echo $i; done; done) | grep -v "random2"| grep -v "Teo--Palmar" | grep -v "random_Dcount.bed" | awk '{print "prop_shared " $0}' > shared.sh
+
+intersect_all(){
+    bed1=$1
+    shared_count=`bedtools intersect -a $bed1 -b \`ls Teo*bed | grep -v ${bed1}\` | uniq -c | wc -l`
+    total_count=`wc -l $bed1 | cut -d ' ' -f1`
+    prop1=`echo -e "scale=5; 1- $shared_count/$total_count" | bc`
+    unique_count=`echo -e $total_count - $shared_count | bc`
+    echo -e "$bed1 $prop1 $unique_count"
+
+}
+
+export -f intersect_all
+bash <(ls Teo*bed | awk '{print "intersect_all " $0}') |  sed 's/_Dcount.bed//g'

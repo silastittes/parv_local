@@ -1,8 +1,8 @@
 rule maf2count:
     input:
-        "data/angsd_pi/{ref}--{ssp}--{pop}.mafs.gz"
+        "data/angsd_pi/{ref}--{ssp}--{population}.mafs.gz"
     output:
-        "data/angsd_treemix/{ref}--{ssp}--{pop}.mafscount.bed"
+        "data/angsd_treemix/{ref}--{ssp}--{population}.mafscount.bed"
     shell:
         """
         zcat < {input} | awk 'NR>1{{scale=1/(2*$8); freq = $7+scale/2 -($7+scale/2)%scale; print $1 "\\t" $2-1 "\\t" $2 "\\t" int(freq*$8*2) "," int((1-freq)*$8*2)}}' > {output}
@@ -11,7 +11,7 @@ rule maf2count:
 
 rule counts2treemix:
     input:
-        expand("data/angsd_treemix/v5--{ssppop}.mafscount.bed", zip,  ssppop = mix_POP)
+        expand("data/angsd_treemix/v5--{ssppopulation}.mafscount.bed", zip,  ssppopulation = mix_POP)
     output:
         "data/angsd_treemix/v5_treemix.gz"
     shell:
@@ -37,10 +37,10 @@ rule treemix:
         "src/treemix/src/treemix -i {input} -o {params.prefix}"
 
 
-rule fourpop:
+rule fourpopulation:
     input:
         "data/angsd_treemix/{ref}_treemix_filtered.gz"
     output:
-        "data/angsd_treemix/{ref}_treemix_filtered.fourpop.txt"
+        "data/angsd_treemix/{ref}_treemix_filtered.fourpopulation.txt"
     shell:
-        "src/treemix/src/fourpop -i {input} -k 500 > {output}"
+        "src/treemix/src/fourpopulation -i {input} -k 500 > {output}"

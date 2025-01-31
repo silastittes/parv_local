@@ -37,11 +37,11 @@ rule trip_beagle:
     input:
         ref = "data/refs/{ref}/{ref}.fa",
         trip = "data/trip/trip_{ref}.fa.gz",
-        bams = "data/trip/{ref}--{ssp}--{pop}__bamlist.txt"
+        bams = "data/trip/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        mafs = "data/angsd_pi/{ref}--{ssp}--{pop}.mafs.gz"
+        mafs = "data/angsd_pi/{ref}--{ssp}--{population}.mafs.gz"
     params:
-        prefix = "data/angsd_pi/{ref}--{ssp}--{pop}"
+        prefix = "data/angsd_pi/{ref}--{ssp}--{population}"
     shell:
         """
         module load angsd

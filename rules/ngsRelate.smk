@@ -4,13 +4,13 @@ rule ngsrelate_beagle:
         sites="data/refs/{ref}/{ref}_500M_sites.txt",
         sites_bin="data/refs/{ref}/{ref}_500M_sites.txt.bin",
         trip = "data/anc/{ref}_anc.fa",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        glf = "data/ngsRelate/{ref}--{ssp}--{pop}.glf.gz",
-        maf = "data/ngsRelate/{ref}--{ssp}--{pop}.mafs.gz"
+        glf = "data/ngsRelate/{ref}--{ssp}--{population}.glf.gz",
+        maf = "data/ngsRelate/{ref}--{ssp}--{population}.mafs.gz"
     params:
         scratch = my_scratch,
-        prefix = my_scratch + "{ref}--{ssp}--{pop}",
+        prefix = my_scratch + "{ref}--{ssp}--{population}",
         final = "data/ngsRelate/"
     shell:
         """
@@ -35,21 +35,21 @@ rule ngsrelate_beagle:
         mv {params.prefix}.glf.gz {params.final}                
         """
 
-rule pop_freq:
+rule population_freq:
     input:
-        "data/ngsRelate/{ref}--{ssp}--{pop}.mafs.gz"
+        "data/ngsRelate/{ref}--{ssp}--{population}.mafs.gz"
     output:
-        "data/ngsRelate/{ref}--{ssp}--{pop}.freqs.txt"
+        "data/ngsRelate/{ref}--{ssp}--{population}.freqs.txt"
     shell:
         "zcat {input} | cut -f7 | sed 1d > {output}"
 
 
 rule ngsRelate:
     input:
-        freq = "data/ngsRelate/{ref}--{ssp}--{pop}.freqs.txt",
-        glf = "data/ngsRelate/{ref}--{ssp}--{pop}.glf.gz",
-        bams = "data/bamlist/{ref}--{ssp}--{pop}__bamlist.txt"
+        freq = "data/ngsRelate/{ref}--{ssp}--{population}.freqs.txt",
+        glf = "data/ngsRelate/{ref}--{ssp}--{population}.glf.gz",
+        bams = "data/bamlist/{ref}--{ssp}--{population}__bamlist.txt"
     output:
-        "data/ngsRelate/{ref}--{ssp}--{pop}.ngsRelate.txt"
+        "data/ngsRelate/{ref}--{ssp}--{population}.ngsRelate.txt"
     shell:
         "src/ngsRelate/ngsRelate -p 5 -g {input.glf} -n `wc -l {input.bams} | cut -d ' ' -f1`  -f {input.freq}  -O {output}"

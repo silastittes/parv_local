@@ -1,8 +1,8 @@
 rule make_freq:
     input:
-        "data/angsd_pi/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.mafs.gz"
+        "data/angsd_pi/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.mafs.gz"
     output:
-        "data/rdmc/freq/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}_freq.bed.gz"
+        "data/rdmc/freq/{ref}--{ssp}--{population}--{chrom}--{start}--{end}_freq.bed.gz"
     shell:
         """
         zcat {input} | awk 'NR > 1 {{print $1 "\\t" $2-1 "\\t" $2 "\\t" $7}}' | gzip > {output}
@@ -10,9 +10,9 @@ rule make_freq:
 
 #rule make_freq:
 #    input:
-#        "data/angsd_vcf/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}.vcf.mop.gz"
+#        "data/angsd_vcf/{ref}--{ssp}--{population}--{chrom}--{start}--{end}.vcf.mop.gz"
 #    output:
-#        "data/rdmc/freq/{ref}--{ssp}--{pop}--{chrom}--{start}--{end}_freq.bed.gz"
+#        "data/rdmc/freq/{ref}--{ssp}--{population}--{chrom}--{start}--{end}_freq.bed.gz"
 #    shell:
 #        """
 #        zcat {input} | grep -v "#"  | sed 's/;/\t/g' | awk '{{print $1 "\\t" $2-1 "\\t" $2 "\\t" $11}}'  | sed 's/AF=//g' | gzip > {output}
@@ -21,10 +21,10 @@ rule make_freq:
 #FILTERED FOR loci with zero variance
 rule merge_freq:
     input:
-        #expand("data/rdmc/freq/{{ref}}--{pops}--{{chrom}}--{{start}}--{{end}}_freq.bed.gz", pops = FREQ_POPS)
-        expand("data/rdmc/freq/{pops}--{{chrom}}--{{start}}--{{end}}_freq.bed.gz", pops = FREQ_POPS)
+        #expand("data/rdmc/freq/{{ref}}--{populations}--{{chrom}}--{{start}}--{{end}}_freq.bed.gz", populations = FREQ_POPS)
+        expand("data/rdmc/freq/{populations}--{{chrom}}--{{start}}--{{end}}_freq.bed.gz", populations = FREQ_POPS)
     output:
-        "data/rdmc/freq/{ref}--allpops--{chrom}--{start}--{end}_freq.txt.gz"
+        "data/rdmc/freq/{ref}--allpopulations--{chrom}--{start}--{end}_freq.txt.gz"
     shell:
         """
         bedtools unionbedg -i {input} -filler NA |\
